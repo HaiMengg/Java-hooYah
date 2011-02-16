@@ -109,7 +109,7 @@ public class ContentPane extends JPanel {
         this.repaint();
     }
     void renderBieuDoSoLuongDangKy(){
-        removeAll();
+        removeComponent();
         BieuDoSoLuongDangKyPanel bieuDoSoLuongDangKyPanel = new BieuDoSoLuongDangKyPanel();
         OptionPanelBieuDoSoLuongDangKy optionPanel = new OptionPanelBieuDoSoLuongDangKy(bieuDoSoLuongDangKyPanel);
         this.add(optionPanel,BorderLayout.NORTH);
@@ -118,7 +118,7 @@ public class ContentPane extends JPanel {
         this.repaint();
     }
     void renderBieuDoHoatDong(){
-        removeAll();
+        removeComponent();
         BieuDoHoatDongPanel bieuDoHoatDongPanel = new BieuDoHoatDongPanel();
         OptionPanelBieuDoHoatDong optionPanel = new OptionPanelBieuDoHoatDong(bieuDoHoatDongPanel);
         this.add(optionPanel,BorderLayout.NORTH);
