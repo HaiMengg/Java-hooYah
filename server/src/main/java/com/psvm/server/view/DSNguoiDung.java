@@ -87,7 +87,7 @@ class DSNguoiDungTable extends JTable{
     // Khi trả dữ về thì trả với dạng List<Object[]> (ArrayList)
     // Coi trong folder EXAMPLE, MySQLData
     private final DefaultTableModel model;
-    private int columnCount;
+    private final int columnCount;
     int index = 1;
     DefaultTableModel getTableModel(){
         return model;
@@ -147,7 +147,7 @@ class DSNguoiDungTable extends JTable{
         setColumnWidthToFitContent();
         //add columnCount for later use
         this.columnCount = this.getColumnCount();
-        TableRowSorter<DefaultTableModel> sorter = (TableRowSorter<DefaultTableModel>) this.getRowSorter();
+
     }
     void filterTable(String username, String name , String status){
         SwingUtilities.invokeLater(new Runnable() {
@@ -230,8 +230,8 @@ class DSNguoiDungTable extends JTable{
                 String creationDateString = creationDateField.getText();
 
                 SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-                Date dob = null;
-                Date creationDate = null;
+                Date dob;
+                Date creationDate;
 
                 try {
                     dob = dateFormat.parse(dobString);
@@ -340,8 +340,8 @@ class DSNguoiDungTable extends JTable{
                         String updatedCreationDate = creationDateField.getText();
 
                         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-                        Date dob = null;
-                        Date creationDate = null;
+                        Date dob ;
+                        Date creationDate;
 
                         try {
                             dob = dateFormat.parse(updatedDob);
