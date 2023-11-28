@@ -96,7 +96,7 @@ class SideMenu extends JPanel{
                 }
 
                 if (button.getText().trim().equals("Danh sách người dùng")){
-                    contentPane.renderDSDangNhap();
+                    contentPane.renderDSNguoiDung();
                 }
                 if (button.getText().trim().equals("Danh sách nhóm chat")){
                     //contentPane.updateContent("Content for Option 2");
