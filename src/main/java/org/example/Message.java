@@ -1,9 +1,11 @@
 package org.example;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Arrays;
 
 public class Message implements Serializable {
+    @Serial
     private static final long serialVersionUID = 1L;
 
     private MessageType type;
@@ -11,9 +13,13 @@ public class Message implements Serializable {
     private byte[] fileData;
     private String fileName;
 
-    public Message(MessageType type, String text) {
+    private String roomID;
+
+
+    public Message(MessageType type, String text, String roomID) {
         this.type = type;
         this.text = text;
+        this.roomID = roomID;
     }
 
     public Message(MessageType type, byte[] fileData, String fileName) {
@@ -43,5 +49,7 @@ public class Message implements Serializable {
     public String getFileName() {
         return fileName;
     }
+
+    public String getRoomID() { return roomID; }
 }
 

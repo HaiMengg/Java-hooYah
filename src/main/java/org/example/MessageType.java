@@ -4,5 +4,6 @@ public enum MessageType {
     TEXT,
     FILE,
 
+    ROOM_ID,
 
 }

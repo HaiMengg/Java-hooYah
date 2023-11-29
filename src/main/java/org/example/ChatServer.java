@@ -8,7 +8,12 @@ import java.util.List;
 public class ChatServer {
     private List<ClientHandler> clients = new ArrayList<>();
 
+
+
     public static void main(String[] args) {
+
+
+        // Start Server
         new ChatServer().startServer();
     }
 
@@ -29,10 +34,10 @@ public class ChatServer {
         }
     }
 
-    public void broadcastMessage(String message, ClientHandler sender) {
+    public void broadcastMessage(String message, String roomID, ClientHandler sender) {
         for (ClientHandler client : clients) {
             if (client != sender) {
-                client.sendMessage(message);
+                client.sendMessage(message, roomID);
             }
         }
     }
@@ -48,4 +53,7 @@ public class ChatServer {
     public void removeClient(ClientHandler clientHandler) {
         clients.remove(clientHandler);
     }
+
+
+
 }
