@@ -99,6 +99,7 @@ class SideMenu extends JPanel{
                         contentPane.renderDSNguoiDung();
                         break;
                     case "Danh sách nhóm chat":
+                        contentPane.renderDSNhomChat();
                         break;
                     case "Danh sách liên lạc của người dùng":
                         break;

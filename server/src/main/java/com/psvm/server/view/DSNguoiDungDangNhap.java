@@ -9,8 +9,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-class DSDangNhapHeader extends JPanel{
-    DSDangNhapHeader() {
+class DSNguoiDungDangNhapHeader extends JPanel{
+    DSNguoiDungDangNhapHeader() {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
         JLabel header = new JLabel("Danh sách đăng nhập theo thứ tự thời gian");
@@ -38,6 +38,9 @@ public class DSNguoiDungDangNhap extends JTable {
         int iconHeight = new ImageIcon("src/main/resources/icon/more_vert.png").getIconHeight();
         this.setRowHeight(iconHeight);
         this.setRowSorter(sorter);
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+        this.setDefaultRenderer(Object.class, centerRenderer);
         //this.setAutoCreateRowSorter(true);
 
         //Renderer for "time" column
@@ -54,12 +57,12 @@ public class DSNguoiDungDangNhap extends JTable {
                 return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             }
         };
-        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
-        centerRenderer.setHorizontalAlignment(JLabel.CENTER);
-        this.setDefaultRenderer(Object.class, centerRenderer);
+
         getColumnModel().getColumn(3).setCellRenderer(dateTimeRenderer);
         setColumnWidthToFitContent();
 
+        //Lúc gọi này trong mySQL phải có dạng DATETIME, sau đso nhớ chuyển về LocalDateTime
+        //Nếu chỉ có ngày thì xem trong file DSNguoiDung của tao (Nói tao sửa lại neu ko biet lam)
         //Data example
         List<Object[]> userAccountData = new ArrayList<>();
         LocalDateTime dateTime1 = LocalDateTime.of(2023, 12, 1, 14, 30, 15);
