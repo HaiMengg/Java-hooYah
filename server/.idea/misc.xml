@@ -5,7 +5,13 @@
     <option name="originalFiles">
       <list>
         <option value="$USER_HOME$/Downloads/jfreechart-1.5.2/pom.xml" />
+        <option value="$PROJECT_DIR$/../jfreechart-1.5.2/pom.xml" />
       </list>
+    </option>
+    <option name="ignoredFiles">
+      <set>
+        <option value="$USER_HOME$/Downloads/jfreechart-1.5.2/pom.xml" />
+      </set>
     </option>
   </component>
   <component name="ProjectRootManager" version="2" project-jdk-name="20" project-jdk-type="JavaSDK">
