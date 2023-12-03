@@ -14,9 +14,9 @@ import java.util.*;
 import java.util.List;
 
 
-class OptionPanel extends JPanel{
+class OptionPanelDSNguoiDung extends JPanel{
     DSNguoiDungTable table;
-    OptionPanel(DSNguoiDungTable table){
+    OptionPanelDSNguoiDung(DSNguoiDungTable table){
         this.table = table;
         this.setLayout(new BorderLayout());
         this.setOpaque(false);
@@ -94,7 +94,9 @@ class DSNguoiDungTable extends JTable{
     }
     DSNguoiDungTable(String[] columnNames){
         super(new DefaultTableModel(columnNames,0));
+        //Formating the table
         this.model = (DefaultTableModel) this.getModel();
+        this.setDefaultEditor(Object.class,null);
         int iconHeight = new ImageIcon("src/main/resources/icon/more_vert.png").getIconHeight();
         this.setRowHeight(iconHeight);
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
@@ -597,7 +599,6 @@ class DSNguoiDungTable extends JTable{
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             // Set the button text and icon (replace "Icon" with your actual icon)
             setIcon(new ImageIcon("src/main/resources/icon/more_vert.png"));
-
             // Customize the button as needed
             // ...
 //            if (isSelected) {
