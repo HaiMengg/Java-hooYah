@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module version="4">
+  <component name="AdditionalModuleElements">
+    <content url="file://$MODULE_DIR$/client">
+      <sourceFolder url="file://$MODULE_DIR$/client/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/client/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/client/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/client/src/test/resources" type="java-test-resource" />
+    </content>
+    <content url="file://$MODULE_DIR$/server">
+      <sourceFolder url="file://$MODULE_DIR$/server/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/server/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/server/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/server/src/test/resources" type="java-test-resource" />
+    </content>
+    <content url="file://$MODULE_DIR$/shared">
+      <sourceFolder url="file://$MODULE_DIR$/shared/com" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/shared/src" isTestSource="false" />
+    </content>
+  </component>
+</module>
