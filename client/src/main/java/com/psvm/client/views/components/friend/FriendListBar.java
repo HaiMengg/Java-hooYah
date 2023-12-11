@@ -1,10 +1,9 @@
-package com.psvm.client.views;
+package com.psvm.client.views.components.friend;
 
 import javax.swing.*;
 import java.awt.*;
-import java.time.LocalDateTime;
 
-class FriendListBar extends JPanel{
+public class FriendListBar extends JPanel{
     //Chat of selected Friend panel
     //private final ContentPane contentPane;
     private JButton selectedButton;
@@ -12,7 +11,7 @@ class FriendListBar extends JPanel{
 
     //later for chat of selected Friend
     //FriendList(ContentPane contentPane)
-    FriendListBar() {
+    public FriendListBar() {
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         this.setOpaque(false);
         this.setPreferredSize(new Dimension(320, 820));
