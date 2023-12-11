@@ -76,7 +76,6 @@ public class ListFriendOfUser extends JPanel {
         // Initialize this GUI component
         setBackground(new Color(0,0,0,0));
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-//        addHoverEffect(userEachFriend);
 
         // Multithreading + Socket
         try {
@@ -125,6 +124,7 @@ public class ListFriendOfUser extends JPanel {
                         thisPanel.add(userEachFriend);
                         // Add vertical spacing between components
                         thisPanel.add(Box.createVerticalStrut(10));
+                        addHoverEffect(userEachFriend);
                     }
                     thisPanel.add(Box.createVerticalGlue());
                     thisPanel.revalidate();
