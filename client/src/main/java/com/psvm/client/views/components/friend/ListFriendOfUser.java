@@ -6,6 +6,8 @@ import com.psvm.shared.socket.SocketResponse;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -74,6 +76,7 @@ public class ListFriendOfUser extends JPanel {
         // Initialize this GUI component
         setBackground(new Color(0,0,0,0));
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+//        addHoverEffect(userEachFriend);
 
         // Multithreading + Socket
         try {
@@ -85,8 +88,29 @@ public class ListFriendOfUser extends JPanel {
             throw new RuntimeException(e);
         }
     }
-    private void addHoverEffect(){
-        
+    private void addHoverEffect(UserEachFriend friend) {
+        friend.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent evt) {
+                if (friend != currentSelectedFriend) {
+                    friend.setBackground(Color.LIGHT_GRAY);
+                }
+            }
+            public void mouseExited(MouseEvent evt) {
+                if (friend != currentSelectedFriend) {
+                    friend.setBackground(Color.WHITE);
+                }
+
+            }
+            public void mouseClicked(MouseEvent evt) {
+                if (currentSelectedFriend != null){
+                    currentSelectedFriend.setBackground(Color.WHITE);
+                }
+                // do sth
+
+                friend.setBackground(Color.decode("#ADD8E6"));
+                currentSelectedFriend = friend;
+            }
+        });
     }
 
     protected void startNextWorker() {
