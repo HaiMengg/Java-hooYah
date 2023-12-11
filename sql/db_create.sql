@@ -1,6 +1,6 @@
 CREATE DATABASE HooYah;
 
-create table User (
+create table hooyah.User (
     Username varchar(255) primary key,
     FirstName nvarchar(255),
     LastName nvarchar(255),
@@ -14,7 +14,7 @@ create table User (
     CreationDate timestamp
 );
 
-create table UserLog (
+create table hooyah.UserLog (
 	UserId varchar(255),
     Datetime timestamp,
     LogType tinyint(1),
@@ -23,13 +23,13 @@ create table UserLog (
     foreign key (UserId) references User(Username)
 );
 
-create table Conversation (
+create table hooyah.Conversation (
 	ConversationId varchar(255) primary key,
 	ConversationName nvarchar(255),
     IsE2EE bool default false
 );
 
-create table ConversationMember (
+create table hooyah.ConversationMember (
 	ConversationId varchar(255),
 	MemberId varchar(255),
     IsAdmin bool,
@@ -38,7 +38,7 @@ create table ConversationMember (
     foreign key (MemberId) references User(Username)
 );
 
-create table ConversationMessage (
+create table hooyah.ConversationMessage (
 	MessageId int,
 	ConversationId varchar(255),
 	SenderId varchar(255),
@@ -49,7 +49,7 @@ create table ConversationMessage (
     foreign key (ConversationId, SenderId) references ConversationMember(ConversationId, MemberId) 
 );
 
-create table E2EE (
+create table hooyah.E2EE (
 	ConversationId varchar(255),
     MemberId varchar(255),
     PublicKey varchar(255) default null,
@@ -57,7 +57,7 @@ create table E2EE (
     foreign key (ConversationId, MemberId) references ConversationMember(ConversationId, MemberId)
 );
 
-create table ConversationLog (
+create table hooyah.ConversationLog (
 	ConversationId varchar(255),
     Datetime timestamp,
     LogType tinyint(1),
@@ -67,7 +67,7 @@ create table ConversationLog (
     foreign key (ConversationId) references ConversationMember(ConversationId) 
 );
 
-create table MessageSeen (
+create table hooyah.MessageSeen (
 	MessageId int,
     ConversationId varchar(255),
     SeenId varchar(255),
@@ -75,14 +75,14 @@ create table MessageSeen (
     foreign key (MessageId, ConversationId) references ConversationMessage(MessageId, ConversationId) 
 );
 
-create table Friend (
+create table hooyah.Friend (
 	UserId varchar(255),
     FriendId varchar(255),
     Status tinyint(1) default 0,
     primary key (UserId, FriendId)
 );
 
-create table FriendRequest (
+create table hooyah.FriendRequest (
 	SenderId varchar(255),
     TargetId varchar(255),
     Datetime timestamp,
@@ -92,7 +92,7 @@ create table FriendRequest (
     foreign key (TargetId) references User(Username)
 );
 
-create table SpamReport (
+create table hooyah.SpamReport (
 	ReporterId varchar(255),
     ReportedId varchar(255),
     Datetime timestamp,
