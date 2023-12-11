@@ -1,4 +1,4 @@
-package com.psvm.client.views;
+package com.psvm.client.views.components.friend;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -47,10 +47,13 @@ public class UserEachFriend extends JPanel {
 
         // Component 2 (button in the second column)
         JLabel friendName = new JLabel(name);
+        Dimension friendNameDimension = new Dimension();
+        friendNameDimension.setSize(160, 1);
+        friendName.setPreferredSize(friendNameDimension);
         gbc.gridx = 1;
         gbc.gridy = 0;
         gbc.gridheight = 1; // Reset grid height
-        gbc.insets = new Insets(0, 0, 0, 135); // Add a 150-pixel gap to the right
+        gbc.insets = new Insets(0, 0, 0, 10); // Add a 10-pixel gap to the right
         this.add(friendName, gbc);
 
         // Component 3 (button in the third column)
@@ -62,8 +65,12 @@ public class UserEachFriend extends JPanel {
 
         // Component 4 (button in the second row)
         JLabel lastMessage= new JLabel(lastChat);
+        Dimension lastMessageDimension = new Dimension();
+        lastMessageDimension.setSize(160, 1);
+        lastMessage.setPreferredSize(lastMessageDimension);
         gbc.gridx = 1;
         gbc.gridy = 1;
+        gbc.insets = new Insets(0, 0, 0, 10); // Add a 10-pixel gap to the right
         this.add(lastMessage, gbc);
 
         // Component 5 (button in the third row)
