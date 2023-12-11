@@ -113,6 +113,7 @@ public class UserEachFriend extends JPanel {
             return dateTime.format(formatter);
         }
     }
+
     private static JLabel createUserStatusLabel(String userStatus) {
         JLabel statusLabel = new JLabel();
         statusLabel.setPreferredSize(new Dimension(20, 20));
@@ -125,7 +126,6 @@ public class UserEachFriend extends JPanel {
             // Set nothing if userStatus is "None"
             statusLabel.setVisible(false);
         }
-
 
         return statusLabel;
     }
