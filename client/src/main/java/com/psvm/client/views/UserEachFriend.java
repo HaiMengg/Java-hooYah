@@ -15,20 +15,36 @@ import java.time.format.DateTimeFormatter;
 
 public class UserEachFriend extends JPanel {
     private String avatar;
+
+
+    //Mới thêm cái này vì nó cần thiết
+    private String username;
     private String name;
     private String lastChat;
     private LocalDateTime lastTime;
     private String userStatus;
-    UserEachFriend(String avatar, String name, String lastChat, LocalDateTime lastTime, String userStatus){
+
+    //Mới thêm cái này vì nó cần thiết
+    private String lastChatStatus;
+    UserEachFriend(String avatar, String username, String name, String lastChat, LocalDateTime lastTime, String userStatus, String lastChatStatus){
         this.avatar = avatar;
+        this.username = username;
         this.name = name;
         this.lastChat = lastChat;
         this.lastTime = lastTime;
         this.userStatus = userStatus;
+        this.lastChatStatus = lastChatStatus;
         this.setPreferredSize(new Dimension(super.getWidth(),70));
         this.setBorder(new EmptyBorder(0,0,0,0));
         this.setBackground(Color.WHITE);
         initialize();
+    }
+    //thêm 2 cái hàm này để lọc ra
+    String getUsername(){
+        return username;
+    }
+    String getUserAppName(){
+        return name;
     }
     void initialize(){
 
@@ -36,7 +52,7 @@ public class UserEachFriend extends JPanel {
         GridBagConstraints gbc = new GridBagConstraints();
 
         // Component 1 (avatar, spanning 2 rows)//nhớ thay avatar dưới này
-        ImageIcon avatarIcon = createCircularAvatar("client/src/main/resources/icon/avatar_sample.jpg", 40, 40);
+        ImageIcon avatarIcon = createCircularAvatar("client/src/main/resources/icon/avatar_sample.jpg", 40, 40,userStatus);
         JLabel avatarLabel = new JLabel(avatarIcon);
         gbc.gridx = 0;
         gbc.gridy = 0;
@@ -67,23 +83,29 @@ public class UserEachFriend extends JPanel {
         this.add(lastMessage, gbc);
 
         // Component 5 (button in the third row)
-        JLabel statusMessage = createUserStatusLabel(userStatus);
+        JLabel statusMessage = createUserStatusLabel(lastChatStatus);
         gbc.gridx = 2;
         gbc.gridy = 1;
         this.add(statusMessage, gbc);
 
     }
 
-    private static ImageIcon createCircularAvatar(String imagePath, int width, int height) {
+    private static ImageIcon createCircularAvatar(String imagePath, int width, int height, String userStatus) {
         try {
+            //https://stackoverflow.com/questions/14731799/bufferedimage-into-circle-shape
             BufferedImage originalImage = ImageIO.read(new File(imagePath));
             BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2d = resizedImage.createGraphics();
 
-            // Create a circular clip
             Shape clip = new Ellipse2D.Float(0, 0, width, height);
             g2d.setClip(clip);
             g2d.drawImage(originalImage, 0, 0, width, height, null);
+
+            if ("Online".equals(userStatus)) {
+                g2d.setColor(Color.GREEN);
+                g2d.setStroke(new BasicStroke(1));
+                g2d.drawOval(0, 0, width - 1, height - 1);
+            }
 
             g2d.dispose();
 
@@ -111,15 +133,21 @@ public class UserEachFriend extends JPanel {
         JLabel statusLabel = new JLabel();
         statusLabel.setPreferredSize(new Dimension(20, 20));
 
+        ImageIcon icon = null;
+
         if ("Online".equals(userStatus)) {
-            statusLabel.setIcon(new ImageIcon("client/src/main/resources/icon/chatWhenOnline.png"));
+            icon = new ImageIcon("client/src/main/resources/icon/chatWhenOnline.png");
         } else if ("Offline".equals(userStatus)) {
-            statusLabel.setIcon(new ImageIcon("client/src/main/resources/icon/chatWhenOffline.png"));
+            icon = new ImageIcon("client/src/main/resources/icon/chatWhenOffline.png");
+        }
+        if (icon != null) {
+            Image scaledImage = icon.getImage().getScaledInstance(10, 10, Image.SCALE_SMOOTH);
+            ImageIcon scaledIcon = new ImageIcon(scaledImage);
+            statusLabel.setIcon(scaledIcon);
         } else {
-            // Set nothing if userStatus is "None"
             statusLabel.setVisible(false);
         }
-
         return statusLabel;
     }
+
 }
