@@ -16,7 +16,7 @@ public class ListFriendOfUser extends JPanel {
         //friendList.add(friendSearchAndAdd);
 
         for (int i = 1; i <= 10; i++) {
-            UserEachFriend userEachFriend = new UserEachFriend("af","tenne","hehe", LocalDateTime.of(2005,12,4, 1,40),"Offline");
+            UserEachFriend userEachFriend = new UserEachFriend("af","username1","tenne","hehe", LocalDateTime.of(2005,12,4, 1,40),"Online","Online");
             addHoverEffect(userEachFriend);
             this.add(userEachFriend);
         }

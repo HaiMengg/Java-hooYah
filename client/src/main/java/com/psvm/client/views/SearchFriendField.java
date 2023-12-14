@@ -10,7 +10,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 
 public class SearchFriendField extends JTextField {
-    private String placeholder = "Tìm kiếm";
+    private String placeholder = "\uD83D\uDD0E Tìm kiếm";
 
     SearchFriendField() {
         setColumns(15);
@@ -62,6 +62,7 @@ public class SearchFriendField extends JTextField {
     private void handleTextChange() {
         // Implement your logic here when text changes
         System.out.println("Text changed: " + getText());
+
     }
 
     // Custom rounded border class

@@ -26,7 +26,9 @@ public class MainClient {
         FriendListBar friendListBar = new FriendListBar();
         jfrm.add(friendListBar,BorderLayout.WEST);
 
-        //Chat panel
+        //Chat Section
+        ChatSection chatSection = new ChatSection();
+        jfrm.add(chatSection,BorderLayout.EAST);
         //Set visible
         jfrm.setVisible(true);
     }
