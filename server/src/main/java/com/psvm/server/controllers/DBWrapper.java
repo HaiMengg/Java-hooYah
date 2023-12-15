@@ -155,6 +155,13 @@ public class DBWrapper {
 		return new ResultSet[] {rs1, rs2, rs3};
 	}
 
+	public ResultSet getTest() throws SQLException {
+		String sql = "SELECT CreationDate FROM User";
+		Vector<Object> questionMarks = new Vector<>();
+
+		return dbConn.doPreparedQuery(sql , questionMarks);
+	}
+
 	public void close() {
 		dbConn.close();
 	}
