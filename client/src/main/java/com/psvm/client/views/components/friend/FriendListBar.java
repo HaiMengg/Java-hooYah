@@ -135,7 +135,7 @@ public class FriendListBar extends JPanel{
 
     protected void startNextWorker() {
         JPanel thisPanel = this;
-        FriendListBarThread worker = new FriendListBarThread(socket, socketIn, socketOut, friendSearchOptions.getCurrentOption(), searchFriendField.getText(), new FriendListBarThread.Observer() {
+        FriendListBarThread worker = new FriendListBarThread(socket, socketIn, socketOut, friendSearchOptions.getCurrentOption(), (searchFriendField.isFocused() ? searchFriendField.getText() : ""), new FriendListBarThread.Observer() {
             @Override
             public void workerDidUpdate(Vector<Map<String, Object>> friends) {
                 SwingUtilities.invokeLater(() -> {

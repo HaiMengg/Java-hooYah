@@ -1,27 +1,15 @@
 package com.psvm.client.views.components.friend;
 
-import com.psvm.client.controllers.FriendListRequest;
-import com.psvm.client.controllers.FriendMessageListRequest;
-import com.psvm.shared.socket.SocketResponse;
-
 import javax.swing.*;
-import javax.swing.plaf.basic.DefaultMenuLayout;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.Socket;
+import java.sql.Array;
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Vector;
 
 public class ListFriendOfUser extends JPanel {
     // Global collections of messages of the 3 types: Unseen while online, Unseen while offline, Seen
@@ -33,6 +21,7 @@ public class ListFriendOfUser extends JPanel {
     private int unseenOnlineMessagesIndex = 0;
     private int unseenOfflineMessagesIndex = 0;
     private int seenMessagesIndex = 0;
+    private ArrayList<String> messageIndexer = new ArrayList<>();
 
     private JPanel currentSelectedFriend;
     ListFriendOfUser(){
@@ -65,9 +54,53 @@ public class ListFriendOfUser extends JPanel {
         });
     }
 
+    // Move message component at childIndex to 3 message type areas, then return the new index of the component
+    int moveMessage(int childIndex, int newMessageType) {
+        System.out.println(childIndex + " " + newMessageType);
+        UserEachFriend conversation = (UserEachFriend) getComponent(childIndex);
+
+        remove(conversation);
+
+        switch (newMessageType) {
+            case 1: {
+                String conversationId = messageIndexer.get(childIndex);
+                messageIndexer.remove(conversationId);
+                messageIndexer.add(0, conversationId);
+
+                add(conversation, 0);
+                return 0;
+            }
+            case 2: {
+                String conversationId = messageIndexer.get(childIndex);
+                messageIndexer.remove(conversationId);
+
+                if (unseenOnlineMessagesIndex <= messageIndexer.size() - 1)
+                    messageIndexer.add(unseenOnlineMessagesIndex, conversationId);
+                else messageIndexer.add(conversationId);
+
+                add(conversation, unseenOnlineMessagesIndex);
+                return unseenOnlineMessagesIndex;
+            }
+            case 3: {
+                String conversationId = messageIndexer.get(childIndex);
+                messageIndexer.remove(conversationId);
+
+                if (unseenOnlineMessagesIndex + unseenOfflineMessagesIndex <= messageIndexer.size() - 1)
+                    messageIndexer.add(unseenOnlineMessagesIndex + unseenOfflineMessagesIndex, conversationId);
+                else messageIndexer.add(conversationId);
+
+                add(conversation, unseenOnlineMessagesIndex + unseenOfflineMessagesIndex);
+                return unseenOnlineMessagesIndex + unseenOfflineMessagesIndex;
+            }
+        }
+
+        return -1;
+    }
+
     public void setData(Vector<Map<String, Object>> friends) {
         JPanel thisPanel = this;
         SwingUtilities.invokeLater(() -> {
+            /* Add unseen messages while online */
             Vector<Map<String, Object>> unseenOnlineMessages = (Vector<Map<String, Object>>) friends.get(0).get("data");
             // If unseenOnlineMessages is empty after this line then the data is the same
             unseenOnlineMessages.removeAll(totalUnseenOnlineMessages);
@@ -75,37 +108,61 @@ public class ListFriendOfUser extends JPanel {
             for (Map<String, Object> friend: unseenOnlineMessages)
             {
                 String convoName = (Integer.parseInt(friend.get("MemberCount").toString()) > 2) ? friend.get("ConversationName").toString() : friend.get("MemberId").toString();
-                UserEachFriend userEachFriend = new UserEachFriend("af", convoName, friend.get("Content").toString(), ((Timestamp) friend.get("Datetime")).toLocalDateTime(),"Online");
-                thisPanel.add(userEachFriend, unseenOnlineMessagesIndex);
-                // Add vertical spacing between components
-                thisPanel.add(Box.createVerticalStrut(10), unseenOnlineMessagesIndex + 1);
-                unseenOnlineMessagesIndex += 2;
-                unseenOfflineMessagesIndex += 2;
-                seenMessagesIndex += 2;
-                addHoverEffect(userEachFriend);
+                if (!messageIndexer.contains(friend.get("ConversationId").toString())) {
+                    UserEachFriend userEachFriend = new UserEachFriend("af", convoName, friend.get("Content").toString(), ((Timestamp) friend.get("Datetime")).toLocalDateTime(),"Online");
+                    thisPanel.add(userEachFriend, unseenOnlineMessagesIndex);
+                    messageIndexer.add(unseenOnlineMessagesIndex, friend.get("ConversationId").toString());
+                    addHoverEffect(userEachFriend);
+                }
+                else {
+                    int newIndex = moveMessage(messageIndexer.indexOf(friend.get("ConversationId").toString()), 1);
+                    System.out.println(newIndex);
+                    UserEachFriend userEachFriend = (UserEachFriend) thisPanel.getComponent(newIndex);
+                    userEachFriend.setData(convoName, friend.get("Content").toString(), ((Timestamp) friend.get("Datetime")).toLocalDateTime(),"Online");
+                }
+                unseenOnlineMessagesIndex++;
             }
-            for (Map<String, Object> friend: (Vector<Map<String, Object>>) friends.get(1).get("data")) {
+
+            /* Add unseen messages while offline */
+            Vector<Map<String, Object>> unseenOfflineMessages = (Vector<Map<String, Object>>) friends.get(1).get("data");
+            // If seenMessages is empty after this line then the data is the same
+            unseenOfflineMessages.removeAll(totalUnseenOfflineMessages);
+            totalUnseenOfflineMessages.addAll(unseenOfflineMessages);
+            for (Map<String, Object> friend: unseenOfflineMessages) {
                 String convoName = (Integer.parseInt(friend.get("MemberCount").toString()) > 2) ? friend.get("ConversationName").toString() : friend.get("MemberId").toString();
-                UserEachFriend userEachFriend = new UserEachFriend("af", convoName, friend.get("Content").toString(), ((Timestamp) friend.get("Datetime")).toLocalDateTime(),"Offline");
-                thisPanel.add(userEachFriend, unseenOfflineMessagesIndex);
-                // Add vertical spacing between components
-                thisPanel.add(Box.createVerticalStrut(10), unseenOfflineMessagesIndex + 1);
-                unseenOfflineMessagesIndex += 2;
-                seenMessagesIndex += 2;
-                addHoverEffect(userEachFriend);
+                if (!messageIndexer.contains(friend.get("ConversationId").toString())) {
+                    UserEachFriend userEachFriend = new UserEachFriend("af", convoName, friend.get("Content").toString(), ((Timestamp) friend.get("Datetime")).toLocalDateTime(),"Offline");
+                    thisPanel.add(userEachFriend, unseenOnlineMessagesIndex + unseenOfflineMessagesIndex);
+                    messageIndexer.add(unseenOnlineMessagesIndex + unseenOfflineMessagesIndex, friend.get("ConversationId").toString());
+                    addHoverEffect(userEachFriend);
+                }
+                else {
+                    int newIndex = moveMessage(messageIndexer.indexOf(friend.get("ConversationId").toString()), 2);
+                    UserEachFriend userEachFriend = (UserEachFriend) thisPanel.getComponent(newIndex);
+                    userEachFriend.setData(convoName, friend.get("Content").toString(), ((Timestamp) friend.get("Datetime")).toLocalDateTime(),"Offline");
+                }
+                unseenOfflineMessagesIndex++;
             }
-            Vector<Map<String, Object>> seenMessages = (Vector<Map<String, Object>>) friends.get(0).get("data");
+
+            /* Add seen messages */
+            Vector<Map<String, Object>> seenMessages = (Vector<Map<String, Object>>) friends.get(2).get("data");
             // If seenMessages is empty after this line then the data is the same
             seenMessages.removeAll(totalSeenMessages);
             totalSeenMessages.addAll(seenMessages);
             for (Map<String, Object> friend: seenMessages) {
                 String convoName = (Integer.parseInt(friend.get("MemberCount").toString()) > 2) ? friend.get("ConversationName").toString() : friend.get("MemberId").toString();
-                UserEachFriend userEachFriend = new UserEachFriend("af", convoName, friend.get("Content").toString(), ((Timestamp) friend.get("Datetime")).toLocalDateTime(),"");
-                thisPanel.add(userEachFriend, seenMessagesIndex);
-                // Add vertical spacing between components
-                thisPanel.add(Box.createVerticalStrut(10), seenMessagesIndex + 1);
-                seenMessagesIndex += 2;
-                addHoverEffect(userEachFriend);
+                if (!messageIndexer.contains(friend.get("ConversationId").toString())) {
+                    UserEachFriend userEachFriend = new UserEachFriend("af", convoName, friend.get("Content").toString(), ((Timestamp) friend.get("Datetime")).toLocalDateTime(),"");
+                    thisPanel.add(userEachFriend, unseenOnlineMessagesIndex + unseenOfflineMessagesIndex + seenMessagesIndex);
+                    messageIndexer.add(unseenOnlineMessagesIndex + unseenOfflineMessagesIndex + seenMessagesIndex, friend.get("ConversationId").toString());
+                    addHoverEffect(userEachFriend);
+                }
+                else {
+                    int newIndex = moveMessage(messageIndexer.indexOf(friend.get("ConversationId").toString()), 3);
+                    UserEachFriend userEachFriend = (UserEachFriend) thisPanel.getComponent(newIndex);
+                    userEachFriend.setData(convoName, friend.get("Content").toString(), ((Timestamp) friend.get("Datetime")).toLocalDateTime(),"");
+                }
+                seenMessagesIndex++;
             }
             thisPanel.add(Box.createVerticalGlue());
             thisPanel.revalidate();

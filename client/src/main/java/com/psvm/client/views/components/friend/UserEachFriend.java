@@ -14,11 +14,21 @@ import java.io.IOException;
 import java.time.format.DateTimeFormatter;
 
 public class UserEachFriend extends JPanel {
+    // Data
     private String avatar;
     private String name;
     private String lastChat;
     private LocalDateTime lastTime;
     private String userStatus;
+
+    // GUI components to display data
+    private GridBagConstraints gbc;
+    private JLabel avatarLabel;
+    private JLabel friendName;
+    private JLabel friendLastTime;
+    private JLabel lastMessage;
+    private JLabel statusMessage;
+
     UserEachFriend(String avatar, String name, String lastChat, LocalDateTime lastTime, String userStatus){
         this.avatar = avatar;
         this.name = name;
@@ -33,11 +43,11 @@ public class UserEachFriend extends JPanel {
     void initialize(){
 
         setLayout(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
+        gbc = new GridBagConstraints();
 
         // Component 1 (avatar, spanning 2 rows)//nhớ thay avatar dưới này
         ImageIcon avatarIcon = createCircularAvatar("client/src/main/resources/icon/avatar_sample.jpg", 40, 40);
-        JLabel avatarLabel = new JLabel(avatarIcon);
+        avatarLabel = new JLabel(avatarIcon);
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridheight = 2;
@@ -46,7 +56,7 @@ public class UserEachFriend extends JPanel {
         this.add(avatarLabel, gbc);
 
         // Component 2 (button in the second column)
-        JLabel friendName = new JLabel(name);
+        friendName = new JLabel(name);
         Dimension friendNameDimension = new Dimension();
         friendNameDimension.setSize(160, 1);
         friendName.setPreferredSize(friendNameDimension);
@@ -57,14 +67,14 @@ public class UserEachFriend extends JPanel {
         this.add(friendName, gbc);
 
         // Component 3 (button in the third column)
-        JLabel friendLastTime = new JLabel(formatLocalDateTime(lastTime));
+        friendLastTime = new JLabel(formatLocalDateTime(lastTime));
         gbc.gridx = 2;
         gbc.gridy = 0;
         gbc.insets = new Insets(0, 0, 0, 0); // Reset insets
         this.add(friendLastTime, gbc);
 
         // Component 4 (button in the second row)
-        JLabel lastMessage= new JLabel(lastChat);
+        lastMessage= new JLabel(lastChat);
         Dimension lastMessageDimension = new Dimension();
         lastMessageDimension.setSize(160, 1);
         lastMessage.setPreferredSize(lastMessageDimension);
@@ -74,11 +84,30 @@ public class UserEachFriend extends JPanel {
         this.add(lastMessage, gbc);
 
         // Component 5 (button in the third row)
-        JLabel statusMessage = createUserStatusLabel(userStatus);
+        statusMessage = createUserStatusLabel(userStatus);
         gbc.gridx = 2;
         gbc.gridy = 1;
         this.add(statusMessage, gbc);
 
+        // Add vertical spacing
+        this.add(Box.createVerticalStrut(10));
+    }
+
+    public String getConversationId() { return this.name; }
+
+    public void setData(String name, String lastChat, LocalDateTime lastTime, String userStatus) {
+        this.name = name;
+        this.lastChat = lastChat;
+        this.lastTime = lastTime;
+        this.userStatus = userStatus;
+
+        friendName.setText(name);
+        lastMessage.setText(lastChat);
+        friendLastTime.setText(formatLocalDateTime(lastTime));
+        this.remove(statusMessage);
+        statusMessage = createUserStatusLabel(userStatus);
+        this.add(statusMessage, gbc);
+        revalidate();
     }
 
     private static ImageIcon createCircularAvatar(String imagePath, int width, int height) {

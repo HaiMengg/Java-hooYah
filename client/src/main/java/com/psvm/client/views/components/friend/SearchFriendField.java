@@ -11,6 +11,7 @@ import java.awt.event.FocusListener;
 
 public class SearchFriendField extends JTextField {
     private String placeholder = "Tìm kiếm";
+    private boolean isFocused = false;
 
     SearchFriendField() {
         setColumns(15);
@@ -27,6 +28,7 @@ public class SearchFriendField extends JTextField {
             @Override
             public void focusGained(FocusEvent e) {
                 if (getText().equals(placeholder)) {
+                    isFocused = true;
                     setText("");
                     setForeground(Color.BLACK);
                 }
@@ -35,6 +37,7 @@ public class SearchFriendField extends JTextField {
             @Override
             public void focusLost(FocusEvent e) {
                 if (getText().isEmpty()) {
+                    isFocused = false;
                     setText(placeholder);
                     setForeground(Color.GRAY);
                 }
@@ -58,6 +61,8 @@ public class SearchFriendField extends JTextField {
             }
         });
     }
+
+    public boolean isFocused() { return isFocused; }
 
     private void handleTextChange() {
         // Implement your logic here when text changes
