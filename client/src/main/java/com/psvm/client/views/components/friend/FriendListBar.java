@@ -26,7 +26,6 @@ class FriendListBarThread extends SwingWorker<Void, Map<String, Object>> {
     private Socket clientSocket;
     ObjectInputStream socketIn;
     ObjectOutputStream socketOut;
-    private String searchOption;
     private String searchContent;
     private Observer observer;
 
@@ -34,11 +33,10 @@ class FriendListBarThread extends SwingWorker<Void, Map<String, Object>> {
         public void workerDidUpdate(Vector<Map<String, Object>> message);
     }
 
-    public FriendListBarThread(Socket clientSocket, ObjectInputStream socketIn, ObjectOutputStream socketOut, String searchOption, String searchContent, Observer observer) {
+    public FriendListBarThread(Socket clientSocket, ObjectInputStream socketIn, ObjectOutputStream socketOut, String searchContent, Observer observer) {
         this.clientSocket = clientSocket;
         this.socketIn = socketIn;
         this.socketOut = socketOut;
-        this.searchOption = searchOption;
         this.searchContent = searchContent;
 
         this.observer = observer;
@@ -46,7 +44,7 @@ class FriendListBarThread extends SwingWorker<Void, Map<String, Object>> {
 
     @Override
     protected Void doInBackground() throws Exception {
-        FriendMessageListRequest request = new FriendMessageListRequest(clientSocket, socketIn, socketOut);
+        FriendMessageListRequest request = new FriendMessageListRequest(clientSocket, socketIn, socketOut, searchContent);
         SocketResponse response = request.talk();
 
         for (Map<String, Object> datum: response.getData()) {
@@ -82,6 +80,7 @@ public class FriendListBar extends JPanel{
     private ListFriendOfUser listFriendOfUser;
     private FriendSearchOptions friendSearchOptions;
     private SearchFriendField searchFriendField;
+    private String previousSearchContent = "";
 
     //later for chat of selected Friend
     //FriendList(ContentPane contentPane)
@@ -134,12 +133,34 @@ public class FriendListBar extends JPanel{
     }
 
     protected void startNextWorker() {
-        JPanel thisPanel = this;
-        FriendListBarThread worker = new FriendListBarThread(socket, socketIn, socketOut, friendSearchOptions.getCurrentOption(), (searchFriendField.isFocused() ? searchFriendField.getText() : ""), new FriendListBarThread.Observer() {
+        String searchOption = friendSearchOptions.getCurrentOption();
+        String chatSearch = "";
+        String friendSearch = "";
+        switch (searchOption) {
+            case "Tìm người theo tên đăng nhập": {
+                chatSearch = "";
+                friendSearch = searchFriendField.isFocused() ? searchFriendField.getText() : "";
+                break;
+            }
+            case "Tìm người theo tên": {
+                chatSearch = "";
+                break;
+            }
+            case "Tìm đoạn chat": {
+                chatSearch = searchFriendField.isFocused() ? searchFriendField.getText() : "";
+                break;
+            }
+        }
+
+        String finalChatSearch = chatSearch;
+        FriendListBarThread worker = new FriendListBarThread(socket, socketIn, socketOut, chatSearch, new FriendListBarThread.Observer() {
             @Override
             public void workerDidUpdate(Vector<Map<String, Object>> friends) {
                 SwingUtilities.invokeLater(() -> {
+                    if (!finalChatSearch.equals(previousSearchContent))
+                        listFriendOfUser.resetList();
                     listFriendOfUser.setData(friends);
+                    previousSearchContent = finalChatSearch;
                 });
             }
         });

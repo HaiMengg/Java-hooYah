@@ -24,6 +24,7 @@ public class ListFriendOfUser extends JPanel {
     private ArrayList<String> messageIndexer = new ArrayList<>();
 
     private JPanel currentSelectedFriend;
+    private String currentSelectedFriendId;
     ListFriendOfUser(){
         // Initialize this GUI component
         setBackground(new Color(255,255,255,255));
@@ -50,6 +51,7 @@ public class ListFriendOfUser extends JPanel {
 
                 friend.setBackground(Color.decode("#ADD8E6"));
                 currentSelectedFriend = friend;
+                currentSelectedFriendId = friend.getConversationId();
             }
         });
     }
@@ -97,6 +99,29 @@ public class ListFriendOfUser extends JPanel {
         return -1;
     }
 
+    public void resetList() {
+        JPanel thisPanel = this;
+        totalUnseenOnlineMessages.clear();
+        totalUnseenOfflineMessages.clear();
+        totalSeenMessages.clear();
+        unseenOnlineMessagesIndex = 0;
+        unseenOfflineMessagesIndex = 0;
+        seenMessagesIndex = 0;
+        messageIndexer.clear();
+        SwingUtilities.invokeLater(() -> {
+            thisPanel.removeAll();
+            thisPanel.revalidate();
+            thisPanel.repaint();
+        });
+    }
+
+    public void manuallySelectMessage(String conversationId) {
+        UserEachFriend selectMessage = (UserEachFriend) getComponent(messageIndexer.indexOf(conversationId));
+
+        selectMessage.setBackground(Color.decode("#ADD8E6"));
+        currentSelectedFriend = selectMessage;
+    }
+
     public void setData(Vector<Map<String, Object>> friends) {
         JPanel thisPanel = this;
         SwingUtilities.invokeLater(() -> {
@@ -107,9 +132,9 @@ public class ListFriendOfUser extends JPanel {
             totalUnseenOnlineMessages.addAll(unseenOnlineMessages);
             for (Map<String, Object> friend: unseenOnlineMessages)
             {
-                String convoName = (Integer.parseInt(friend.get("MemberCount").toString()) > 2) ? friend.get("ConversationName").toString() : friend.get("MemberId").toString();
+                String convoName = (Boolean.parseBoolean(friend.get("IsGroup").toString())) ? friend.get("ConversationName").toString() : friend.get("MemberId").toString();
                 if (!messageIndexer.contains(friend.get("ConversationId").toString())) {
-                    UserEachFriend userEachFriend = new UserEachFriend("af", convoName, friend.get("Content").toString(), ((Timestamp) friend.get("Datetime")).toLocalDateTime(),"Online");
+                    UserEachFriend userEachFriend = new UserEachFriend(friend.get("ConversationId").toString(), "af", convoName, friend.get("Content").toString(), ((Timestamp) friend.get("Datetime")).toLocalDateTime(),"Online");
                     thisPanel.add(userEachFriend, unseenOnlineMessagesIndex);
                     messageIndexer.add(unseenOnlineMessagesIndex, friend.get("ConversationId").toString());
                     addHoverEffect(userEachFriend);
@@ -120,6 +145,10 @@ public class ListFriendOfUser extends JPanel {
                     UserEachFriend userEachFriend = (UserEachFriend) thisPanel.getComponent(newIndex);
                     userEachFriend.setData(convoName, friend.get("Content").toString(), ((Timestamp) friend.get("Datetime")).toLocalDateTime(),"Online");
                 }
+
+                // Manually set the selected effect
+                if (currentSelectedFriendId != null && currentSelectedFriendId.equals(friend.get("ConversationId").toString()))
+                    manuallySelectMessage(currentSelectedFriendId);
                 unseenOnlineMessagesIndex++;
             }
 
@@ -129,9 +158,11 @@ public class ListFriendOfUser extends JPanel {
             unseenOfflineMessages.removeAll(totalUnseenOfflineMessages);
             totalUnseenOfflineMessages.addAll(unseenOfflineMessages);
             for (Map<String, Object> friend: unseenOfflineMessages) {
-                String convoName = (Integer.parseInt(friend.get("MemberCount").toString()) > 2) ? friend.get("ConversationName").toString() : friend.get("MemberId").toString();
+                System.out.println(friend.get("ConversationId").toString());
+                System.out.println(messageIndexer);
+                String convoName = (Boolean.parseBoolean(friend.get("IsGroup").toString())) ? friend.get("ConversationName").toString() : friend.get("MemberId").toString();
                 if (!messageIndexer.contains(friend.get("ConversationId").toString())) {
-                    UserEachFriend userEachFriend = new UserEachFriend("af", convoName, friend.get("Content").toString(), ((Timestamp) friend.get("Datetime")).toLocalDateTime(),"Offline");
+                    UserEachFriend userEachFriend = new UserEachFriend(friend.get("ConversationId").toString(), "af", convoName, friend.get("Content").toString(), ((Timestamp) friend.get("Datetime")).toLocalDateTime(),"Offline");
                     thisPanel.add(userEachFriend, unseenOnlineMessagesIndex + unseenOfflineMessagesIndex);
                     messageIndexer.add(unseenOnlineMessagesIndex + unseenOfflineMessagesIndex, friend.get("ConversationId").toString());
                     addHoverEffect(userEachFriend);
@@ -141,6 +172,10 @@ public class ListFriendOfUser extends JPanel {
                     UserEachFriend userEachFriend = (UserEachFriend) thisPanel.getComponent(newIndex);
                     userEachFriend.setData(convoName, friend.get("Content").toString(), ((Timestamp) friend.get("Datetime")).toLocalDateTime(),"Offline");
                 }
+
+                // Manually set the selected effect
+                if (currentSelectedFriendId != null && currentSelectedFriendId.equals(friend.get("ConversationId").toString()))
+                    manuallySelectMessage(currentSelectedFriendId);
                 unseenOfflineMessagesIndex++;
             }
 
@@ -150,9 +185,9 @@ public class ListFriendOfUser extends JPanel {
             seenMessages.removeAll(totalSeenMessages);
             totalSeenMessages.addAll(seenMessages);
             for (Map<String, Object> friend: seenMessages) {
-                String convoName = (Integer.parseInt(friend.get("MemberCount").toString()) > 2) ? friend.get("ConversationName").toString() : friend.get("MemberId").toString();
+                String convoName = (Boolean.parseBoolean(friend.get("IsGroup").toString())) ? friend.get("ConversationName").toString() : friend.get("MemberId").toString();
                 if (!messageIndexer.contains(friend.get("ConversationId").toString())) {
-                    UserEachFriend userEachFriend = new UserEachFriend("af", convoName, friend.get("Content").toString(), ((Timestamp) friend.get("Datetime")).toLocalDateTime(),"");
+                    UserEachFriend userEachFriend = new UserEachFriend(friend.get("ConversationId").toString(), "af", convoName, friend.get("Content").toString(), ((Timestamp) friend.get("Datetime")).toLocalDateTime(),"");
                     thisPanel.add(userEachFriend, unseenOnlineMessagesIndex + unseenOfflineMessagesIndex + seenMessagesIndex);
                     messageIndexer.add(unseenOnlineMessagesIndex + unseenOfflineMessagesIndex + seenMessagesIndex, friend.get("ConversationId").toString());
                     addHoverEffect(userEachFriend);
@@ -162,6 +197,10 @@ public class ListFriendOfUser extends JPanel {
                     UserEachFriend userEachFriend = (UserEachFriend) thisPanel.getComponent(newIndex);
                     userEachFriend.setData(convoName, friend.get("Content").toString(), ((Timestamp) friend.get("Datetime")).toLocalDateTime(),"");
                 }
+
+                // Manually set the selected effect
+                if (currentSelectedFriendId != null && currentSelectedFriendId.equals(friend.get("ConversationId").toString()))
+                    manuallySelectMessage(currentSelectedFriendId);
                 seenMessagesIndex++;
             }
             thisPanel.add(Box.createVerticalGlue());
