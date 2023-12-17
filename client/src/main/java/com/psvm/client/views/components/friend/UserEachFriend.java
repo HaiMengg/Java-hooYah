@@ -15,6 +15,7 @@ import java.time.format.DateTimeFormatter;
 
 public class UserEachFriend extends JPanel {
     // Data
+    private String id;
     private String avatar;
     private String name;
     private String lastChat;
@@ -29,7 +30,8 @@ public class UserEachFriend extends JPanel {
     private JLabel lastMessage;
     private JLabel statusMessage;
 
-    UserEachFriend(String avatar, String name, String lastChat, LocalDateTime lastTime, String userStatus){
+    UserEachFriend(String id, String avatar, String name, String lastChat, LocalDateTime lastTime, String userStatus){
+        this.id = id;
         this.avatar = avatar;
         this.name = name;
         this.lastChat = lastChat;
@@ -93,7 +95,7 @@ public class UserEachFriend extends JPanel {
         this.add(Box.createVerticalStrut(10));
     }
 
-    public String getConversationId() { return this.name; }
+    public String getConversationId() { return id; }
 
     public void setData(String name, String lastChat, LocalDateTime lastTime, String userStatus) {
         this.name = name;
