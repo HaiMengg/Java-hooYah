@@ -1,4 +1,4 @@
-package com.psvm.client.views;
+package com.psvm.client.views.components.friend;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
