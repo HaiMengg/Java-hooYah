@@ -104,7 +104,7 @@ create table hooyah.SpamReport (
 
 create table hooyah.Emptiness (
 	placeholder int
-);conversation
+);
 
 DELIMITER //
 create trigger hooyah.TRG_Request_Response
