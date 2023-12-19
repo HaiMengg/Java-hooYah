@@ -102,6 +102,10 @@ create table hooyah.SpamReport (
     foreign key (ReportedId) references User(Username)
 );
 
+create table hooyah.Emptiness (
+	placeholder int
+);conversation
+
 DELIMITER //
 create trigger hooyah.TRG_Request_Response
 after update on FriendRequest
@@ -142,6 +146,7 @@ insert into hooyah.ConversationMember values ('CV000002', 'adhd', true);
 
 insert into hooyah.Friend (UserId, FriendId)
 values ('Highman', 'Baobeo');
+insert into hooyah.Friend (UserId, FriendId) values ('Highman', 'adhd');
 
 insert into hooyah.FriendRequest (SenderId, TargetId, Datetime) values ('Kizark', 'Highman', current_timestamp());
 update hooyah.FriendRequest
