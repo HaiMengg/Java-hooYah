@@ -1,5 +1,6 @@
 package com.psvm.client.views;
 
+import com.psvm.client.views.components.account.RegisterBox;
 import com.psvm.client.views.components.friend.FriendListBar;
 
 import javax.swing.*;
@@ -11,6 +12,9 @@ import java.util.Vector;
 public class MainClient {
     private final JFrame jfrm;
     MainClient(){
+        RegisterBox registerBox = new RegisterBox();
+        registerBox.display();
+
         jfrm = new JFrame("hooYah");
         jfrm.setLayout(new BorderLayout());
         jfrm.setLocationRelativeTo(null);

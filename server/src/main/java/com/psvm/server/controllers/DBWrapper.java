@@ -21,6 +21,23 @@ public class DBWrapper {
 		}
 	}
 
+	public void createUser(String username, String fName, String lName, String password, String address, LocalDateTime dob, boolean isMale, String email) throws SQLException {
+		System.out.println(username);
+		String sql = "INSERT INTO User VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, '', current_timestamp())";
+
+		Vector<Object> questionMarks = new Vector<>();
+		questionMarks.add(username);
+		questionMarks.add(fName);
+		questionMarks.add(lName);
+		questionMarks.add(password);
+		questionMarks.add(address);
+		questionMarks.add(dob);
+		questionMarks.add(isMale);
+		questionMarks.add(email);
+
+		dbConn.doPreparedStatement(sql, questionMarks);
+	}
+
 	public void respondFriendRequest(String currentUsername, String senderId) throws SQLException {
 		// Remove first sql line (before first semicolon) when done testing
 		String sql1 = "INSERT INTO FriendRequest (SenderId, TargetId, Datetime) VALUES (?, ?, current_timestamp());";
@@ -60,14 +77,14 @@ public class DBWrapper {
 		return dbConn.doPreparedQuery(sql, questionMarks);
 	}
 
-	public ResultSet[] getFriendMessageList(String currentUsername, String searchContent) throws SQLException {
+	public ResultSet[] getFriendMessageList(String currentUsername, String friendSearch, String chatSearch) throws SQLException {
 		String sql1 = "WITH ranked_data AS (\n" +
 				"\tSELECT cv.ConversationId, cv.ConversationName, cvmes.MessageId, cvmes.SenderId, cvmem2.MemberId, cvmes.Datetime, \n" +
 				"    cvmes.Content, cv.IsGroup,\n" +
 				"        ROW_NUMBER() OVER (PARTITION BY cv.ConversationId ORDER BY cvmes.Datetime DESC) AS rn\n" +
 				"\tFROM Conversation cv\n" +
 				"\tJOIN ConversationMember cvmem ON cv.ConversationId = cvmem.ConversationId\n" +
-				"    JOIN ConversationMember cvmem2 ON cv.ConversationId = cvmem2.ConversationId AND cvmem2.MemberId != ?\n" +
+				"    JOIN ConversationMember cvmem2 ON cv.ConversationId = cvmem2.ConversationId AND cvmem2.MemberId LIKE ? AND cvmem2.MemberId != ?\n" +
 				"\tJOIN ConversationMessage cvmes ON cvmes.ConversationId = cvmem.ConversationId\n" +
 				"    JOIN conversationmessage cvmes2 ON cvmes2.ConversationId = cvmem.ConversationId AND cvmes2.Content LIKE ?\n" +
 				"\tWHERE cvmem.MemberId=?\n" +
@@ -86,8 +103,9 @@ public class DBWrapper {
 				");";
 
 		Vector<Object> questionMarks1 = new Vector<>();
+		questionMarks1.add("%" + friendSearch + "%");
 		questionMarks1.add(currentUsername);
-		questionMarks1.add("%" + searchContent + "%");
+		questionMarks1.add("%" + chatSearch + "%");
 		questionMarks1.add(currentUsername);
 		questionMarks1.add(currentUsername);
 		questionMarks1.add(currentUsername);
@@ -100,7 +118,7 @@ public class DBWrapper {
 				"        ROW_NUMBER() OVER (PARTITION BY cv.ConversationId ORDER BY cvmes.Datetime DESC) AS rn\n" +
 				"\tFROM Conversation cv\n" +
 				"\tJOIN ConversationMember cvmem ON cv.ConversationId = cvmem.ConversationId\n" +
-				"    JOIN ConversationMember cvmem2 ON cv.ConversationId = cvmem2.ConversationId AND cvmem2.MemberId != ?\n" +
+				"    JOIN ConversationMember cvmem2 ON cv.ConversationId = cvmem2.ConversationId AND cvmem2.MemberId LIKE ? AND cvmem2.MemberId != ?\n" +
 				"\tJOIN ConversationMessage cvmes ON cvmes.ConversationId = cvmem.ConversationId\n" +
 				"    JOIN conversationmessage cvmes2 ON cvmes2.ConversationId = cvmem.ConversationId AND cvmes2.Content LIKE ?\n" +
 				"\tWHERE cvmem.MemberId=?\n" +
@@ -119,8 +137,9 @@ public class DBWrapper {
 				");";
 
 		Vector<Object> questionMarks2 = new Vector<>();
+		questionMarks2.add("%" + friendSearch + "%");
 		questionMarks2.add(currentUsername);
-		questionMarks2.add("%" + searchContent + "%");
+		questionMarks2.add("%" + chatSearch + "%");
 		questionMarks2.add(currentUsername);
 		questionMarks2.add(currentUsername);
 		questionMarks2.add(currentUsername);
@@ -133,7 +152,7 @@ public class DBWrapper {
 				"        ROW_NUMBER() OVER (PARTITION BY cv.ConversationId ORDER BY cvmes.Datetime DESC) AS rn\n" +
 				"\tFROM Conversation cv\n" +
 				"\tJOIN ConversationMember cvmem ON cv.ConversationId = cvmem.ConversationId\n" +
-				"    JOIN ConversationMember cvmem2 ON cv.ConversationId = cvmem2.ConversationId AND cvmem2.MemberId != ?\n" +
+				"    JOIN ConversationMember cvmem2 ON cv.ConversationId = cvmem2.ConversationId AND cvmem2.MemberId LIKE ? AND cvmem2.MemberId != ?\n" +
 				"\tJOIN ConversationMessage cvmes ON cvmes.ConversationId = cvmem.ConversationId\n" +
 				"    JOIN conversationmessage cvmes2 ON cvmes2.ConversationId = cvmem.ConversationId AND cvmes2.Content LIKE ?\n" +
 				"\tWHERE cvmem.MemberId=?\n" +
@@ -148,14 +167,40 @@ public class DBWrapper {
 				");";
 
 		Vector<Object> questionMarks3 = new Vector<>();
+		questionMarks3.add("%" + friendSearch + "%");
 		questionMarks3.add(currentUsername);
-		questionMarks3.add("%" + searchContent + "%");
+		questionMarks3.add("%" + chatSearch + "%");
 		questionMarks3.add(currentUsername);
 		questionMarks3.add(currentUsername);
 
 		ResultSet rs3 = dbConn.doPreparedQuery(sql3, questionMarks3);
 
-		return new ResultSet[] {rs1, rs2, rs3};
+		ResultSet rs4;
+		String sql4 = "";
+		Vector<Object> questionMarks4 = new Vector<>();
+		// If the client is search for chat message's content then no Unmessaged friends will be displayed
+		if (chatSearch.isEmpty()) {
+			sql4 = "SELECT f.UserId, f.FriendId\n" +
+					"FROM Friend f\n" +
+					"WHERE (f.UserId = ? AND f.FriendId LIKE ? OR f.UserId LIKE ? AND f.FriendId = ?) AND NOT EXISTS (\n" +
+					"\tSELECT *\n" +
+					"    FROM Conversation cv\n" +
+					"    JOIN ConversationMember cvmem ON cv.ConversationId = cvmem.ConversationId\n" +
+					"    JOIN ConversationMember cvmem2 ON cvmem.ConversationId = cvmem2.ConversationId\n" +
+					"    WHERE cvmem.MemberId = f.UserId AND cvmem2.MemberId = f.FriendId AND cvmem.MemberId != cvmem2.MemberId AND cv.IsGroup = false\n" +
+					");";
+
+			questionMarks4.add(currentUsername);
+			questionMarks4.add("%" + friendSearch + "%");
+			questionMarks4.add("%" + friendSearch + "%");
+			questionMarks4.add(currentUsername);
+		}
+		else {
+			sql4 = "SELECT * FROM Emptiness;";
+		}
+		rs4 = dbConn.doPreparedQuery(sql4, questionMarks4);
+
+		return new ResultSet[] {rs1, rs2, rs3, rs4};
 	}
 
 

@@ -26,6 +26,7 @@ create table hooyah.UserLog (
 create table hooyah.Conversation (
 	ConversationId varchar(255) primary key,
 	ConversationName nvarchar(255),
+    IsGroup bool,
     IsE2EE bool default false
 );
 
@@ -102,7 +103,7 @@ create table hooyah.SpamReport (
 );
 
 DELIMITER //
-create trigger TRG_Request_Response
+create trigger hooyah.TRG_Request_Response
 after update on FriendRequest
 for each row
 begin
@@ -120,11 +121,15 @@ values
 	('Kizark', 'Nguyễn', 'Lâm Hải', 'abcdef', '35 fdsgfd', '2003-02-02', true, 'fasd@email', 0, '', '2023-02-12'),
 	('Baobeo', 'Nguyễn Phú', 'Minh Bảo', 'abc123', '5435 ashhh', '2003-03-03', true, 'hhh@email', 0, '', '2023-02-12'),
 	('adhd', 'agdsg', 'gadsghf', '123', '222 ttt', '1970-04-04', false, 'ytrhy@email', 0, '', '2023-02-12');
-
-insert into hooyah.Conversation (ConversationId, ConversationName)
+    
+insert into hooyah.UserLog
 values
-	('CV000001', 'Cuộc trò chuyện'),
-	('CV000002', 'Cuộc trò chuyện');
+	('Highman', '2023-11-12', 0, '');
+
+insert into hooyah.Conversation (ConversationId, ConversationName, IsGroup)
+values
+	('CV000001', 'Cuộc trò chuyện', false),
+	('CV000002', 'Cuộc trò chuyện', true);
 
 insert into hooyah.ConversationMember
 values

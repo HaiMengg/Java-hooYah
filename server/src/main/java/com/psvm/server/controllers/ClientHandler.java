@@ -9,6 +9,7 @@ import java.net.Socket;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.*;
 
 public class ClientHandler implements Runnable {
@@ -45,6 +46,11 @@ public class ClientHandler implements Runnable {
 				SocketRequest request = (SocketRequest) handlerIn.readObject();
 
 				switch (request.getTalkCode()) {
+					case "1": {
+						talkCode_CreateUser(request.getData());
+
+						break;
+					}
 					case "4c": {
 						Map<String, Object> data = request.getData();
 						try {
@@ -128,9 +134,19 @@ public class ClientHandler implements Runnable {
 		}
 	}
 
+	void talkCode_CreateUser(Map<String, Object> data) throws IOException {
+		try {
+			db.createUser(data.get("username").toString(), data.get("firstName").toString(), data.get("lastName").toString(), data.get("password").toString(), data.get("address").toString(), (LocalDateTime) data.get("dob"), (boolean) data.get("gender"), data.get("email").toString());
+			handlerOut.writeObject(new SocketResponse(SocketResponse.RESPONSE_CODE_SUCCESS, null));
+		} catch (SQLException e) {
+			System.out.println(e.getMessage());
+			handlerOut.writeObject(new SocketResponse(SocketResponse.RESPONSE_CODE_FAILURE, null));
+		}
+	}
+
 	void talkCode_FriendMessageList(Map<String, Object> data) throws IOException {
 		try {
-			ResultSet[] queryResult = db.getFriendMessageList(data.get("username").toString(), data.get("search").toString());
+			ResultSet[] queryResult = db.getFriendMessageList(data.get("username").toString(), data.get("friendSearch").toString(), data.get("chatSearch").toString());
 
 			Vector<Map<String, Object>> responseData = new Vector<>();
 			for (ResultSet qrEach: queryResult) {
