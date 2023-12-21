@@ -73,7 +73,18 @@ class OptionPanelDSLienLacNguoiDung extends JPanel{
         filterPanel.add(dropdown);
         filterPanel.add(numberOfFriendsField);
         filterPanel.add(filterButton);
-
+        JButton refreshButton = new JButton("Làm mới bộ lọc");
+        refreshButton.setFocusPainted(false);
+        refreshButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                nameField.setText("");
+                numberOfFriendsField.setText("");
+                dropdown.setSelectedIndex(0);
+                table.filterTable("","","");
+            }
+        });
+        filterPanel.add(refreshButton);
         //Add to Option Panel
         this.add(filterPanel,BorderLayout.WEST);
 
