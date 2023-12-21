@@ -38,6 +38,16 @@ public class DBWrapper {
 		dbConn.doPreparedStatement(sql, questionMarks);
 	}
 
+	public ResultSet getUser(String username, String hashedPassword) throws SQLException {
+		String sql = "SELECT COUNT(Username) as UserFound FROM User WHERE Username=? AND Password=? GROUP BY Username;";
+
+		Vector<Object> questionMarks = new Vector<>();
+		questionMarks.add(username);
+		questionMarks.add(hashedPassword);
+
+		return dbConn.doPreparedQuery(sql, questionMarks);
+	}
+
 	public void respondFriendRequest(String currentUsername, String senderId) throws SQLException {
 		// Remove first sql line (before first semicolon) when done testing
 		String sql1 = "INSERT INTO FriendRequest (SenderId, TargetId, Datetime) VALUES (?, ?, current_timestamp());";
