@@ -3,12 +3,9 @@ package com.psvm.client.views;
 import com.psvm.client.views.components.account.LoginBox;
 import com.psvm.client.views.components.account.RegisterBox;
 import com.psvm.client.views.components.friend.FriendListBar;
-
 import javax.swing.*;
 import javax.swing.border.MatteBorder;
 import java.awt.*;
-import java.util.Map;
-import java.util.Vector;
 
 public class MainClient {
     private final JFrame jfrm;
@@ -43,7 +40,7 @@ public class MainClient {
 
         //Chat Section
         ChatSection chatSection = new ChatSection();
-        jfrm.add(chatSection,BorderLayout.EAST);
+        jfrm.add(chatSection,BorderLayout.CENTER);
         //Set visible
         jfrm.setVisible(true);
     }
