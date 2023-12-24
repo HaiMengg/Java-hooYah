@@ -5,7 +5,6 @@ import javax.swing.border.MatteBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.time.LocalDateTime;
 
 class FriendListBar extends JPanel{
     //Chat of selected Friend panel
@@ -38,9 +37,9 @@ class FriendListBar extends JPanel{
         friendSearchAndAdd.add(addFriendIconButton);
         this.add(friendSearchAndAdd);
 
+
         // Friend list
-        ListFriendOfUser listFriendOfUser = new ListFriendOfUser();
-        JScrollPane scrollFriend = new JScrollPane(listFriendOfUser);
+        JScrollPane scrollFriend = new JScrollPane();
         scrollFriend.setBorder(null);
         scrollFriend.setPreferredSize(new Dimension(320, 630));
         scrollFriend.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
@@ -53,5 +52,10 @@ class FriendListBar extends JPanel{
         });
 
         this.add(scrollFriend);
+
+        // Setup choosing panel
+        FriendListChoosingCategory friendListChoosingCategory = new FriendListChoosingCategory(scrollFriend);
+        this.add(friendListChoosingCategory);
+
     }
 }

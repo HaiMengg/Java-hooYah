@@ -45,7 +45,7 @@ public class UserEachGroup extends UserEachFriend {
         JPopupMenu popupMenu = new JPopupMenu();
         popupMenu.setBackground(Color.WHITE);
 
-        JMenuItem leaveGroup = new JMenuItem("🚪 Leave group");
+        JMenuItem leaveGroup = new JMenuItem("🚪 Rời nhóm");
         leaveGroup.setFont(new Font(null,Font.PLAIN,16));
         leaveGroup.setForeground(Color.RED);
 
@@ -55,11 +55,11 @@ public class UserEachGroup extends UserEachFriend {
             @Override
             public void actionPerformed(ActionEvent e) {
                 int response = JOptionPane.showConfirmDialog(null,
-                        "Are you sure you want to leave this group?",
-                        "Confirmation", JOptionPane.YES_NO_OPTION);
+                        "Bạn có muốn rời khỏi nhóm này?",
+                        "Xác nhận", JOptionPane.YES_NO_OPTION);
                 if (response == JOptionPane.YES_OPTION) {
                     // giữ hay bỏ gì tuỳ cái dialog này tuỳ ko quan trọng
-                    JOptionPane.showMessageDialog(null, "Leaving group...");
+                    JOptionPane.showMessageDialog(null, "Rời khỏi nhóm...");
                 }
             }
         });

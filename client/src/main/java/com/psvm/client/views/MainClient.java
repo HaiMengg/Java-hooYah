@@ -20,9 +20,9 @@ public class MainClient {
         jfrm.setSize(1440, 820);
         // Terminate the program when the user closes
         // the application.
+        //FriendListBar
         jfrm.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        //FriendList
         FriendListBar friendListBar = new FriendListBar();
         jfrm.add(friendListBar,BorderLayout.WEST);
 

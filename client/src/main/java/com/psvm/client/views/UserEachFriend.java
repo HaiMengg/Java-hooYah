@@ -25,6 +25,7 @@ public class UserEachFriend extends JPanel {
      String userStatus;
     //Mới thêm cái này vì nó cần thiết
      String lastChatStatus;
+     private Boolean blocked = false; //coi thử có bị chặn không
     UserEachFriend(String avatar, String username, String name, String lastChat, LocalDateTime lastTime, String userStatus, String lastChatStatus){
         this.avatar = avatar;
         this.username = username;
@@ -33,6 +34,50 @@ public class UserEachFriend extends JPanel {
         this.lastTime = lastTime;
         this.userStatus = userStatus;
         this.lastChatStatus = lastChatStatus;
+        this.setPreferredSize(new Dimension(super.getWidth(),70));
+        this.setBorder(new EmptyBorder(0,0,0,0));
+        this.setBackground(Color.WHITE);
+        initialize();
+        this.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (SwingUtilities.isRightMouseButton(e)){
+                    showPopupMenu(e.getX(),e.getY());
+                }
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+
+            }
+
+        });
+    }
+    //Chỗ này dành cho cái lũ bị block (thật ra t tạo cai này vì nếu muốn truyền thẳng vào thôi, ko thì tạo 1 cái setter cũng đc, xoá cái class này đi)
+    UserEachFriend(String avatar, String username, String name, String lastChat, LocalDateTime lastTime, String userStatus, String lastChatStatus, boolean blocked){
+        this.avatar = avatar;
+        this.username = username;
+        this.name = name;
+        this.lastChat = lastChat;
+        this.lastTime = lastTime;
+        this.userStatus = userStatus;
+        this.lastChatStatus = lastChatStatus;
+        this.blocked = blocked;
         this.setPreferredSize(new Dimension(super.getWidth(),70));
         this.setBorder(new EmptyBorder(0,0,0,0));
         this.setBackground(Color.WHITE);
@@ -123,44 +168,64 @@ public class UserEachFriend extends JPanel {
         JPopupMenu popupMenu = new JPopupMenu();
         popupMenu.setBackground(Color.WHITE);
 
-        JMenuItem addGroupItem = new JMenuItem("👋 Add Group");
+        JMenuItem addGroupItem = new JMenuItem("👋 Tạo nhóm với người này");
         addGroupItem.setFont(new Font(null,Font.PLAIN,16));
         addGroupItem.setForeground(Color.blue);
-
-        JMenuItem blockItem = new JMenuItem("🚫 Block");
-        blockItem.setForeground(Color.red);
-        blockItem.setFont(new Font(null,Font.PLAIN,16));
-
-        JMenuItem unfriendItem = new JMenuItem("❌ Unfriend");
+        popupMenu.add(addGroupItem);
+        JMenuItem blockItem;
+        if (!blocked){
+            blockItem = new JMenuItem("🚫 Chặn người này");
+            blockItem.setForeground(Color.red);
+            blockItem.setFont(new Font(null,Font.PLAIN,16));
+            popupMenu.add(blockItem);
+        }
+        else{
+            blockItem = new JMenuItem("🚫 Bỏ chặn người này");
+            blockItem.setForeground(Color.red);
+            blockItem.setFont(new Font(null,Font.PLAIN,16));
+            popupMenu.add(blockItem);
+        }
+        JMenuItem unfriendItem = new JMenuItem("❌ Huỷ bạn bè");
         unfriendItem.setFont(new Font(null,Font.PLAIN,16));
         unfriendItem.setForeground(Color.blue);
+        popupMenu.add(unfriendItem);
 
-        JMenuItem spamItem = new JMenuItem("🤐 Report Spam");
+        JMenuItem spamItem = new JMenuItem("🤐 Báo cáo Spam");
         spamItem.setFont(new Font(null,Font.PLAIN,16));
         spamItem.setForeground(Color.red);
-
-        popupMenu.add(addGroupItem);
-        popupMenu.add(blockItem);
-        popupMenu.add(unfriendItem);
         popupMenu.add(spamItem);
+
+
+
 
         addGroupItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JOptionPane.showMessageDialog(null,
-                        "You have created a group with this user!");
+                        "Bạn đã tạo 1 nhóm với người này, vui lòng kiểm tra bên 'Nhóm'!");
             }
         });
 
         blockItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int response = JOptionPane.showConfirmDialog(null,
-                        "Are you sure you want to block this user?",
-                        "Confirmation", JOptionPane.YES_NO_OPTION);
-                if (response == JOptionPane.YES_OPTION) {
-                    // giữ hay bỏ gì tuỳ cái dialog này tuỳ ko quan trọng
-                    JOptionPane.showMessageDialog(null, "Blocking...");
+                if (!blocked){
+                    int response = JOptionPane.showConfirmDialog(null,
+                            "Bạn có chắc muốn chặn người này?",
+                            "Xác nhận", JOptionPane.YES_NO_OPTION);
+                    if (response == JOptionPane.YES_OPTION) {
+                        // giữ hay bỏ gì tuỳ cái dialog này tuỳ ko quan trọng
+                        JOptionPane.showMessageDialog(null, "Chặn...");
+                    }
+                }
+                else{
+                    int response = JOptionPane.showConfirmDialog(null,
+                            "Bạn có chắc muốn bỏ chặn người này?",
+                            "Xác nhận", JOptionPane.YES_NO_OPTION);
+                    if (response == JOptionPane.YES_OPTION) {
+                        // giữ hay bỏ gì tuỳ cái dialog này tuỳ ko quan trọng
+                        JOptionPane.showMessageDialog(null, "Bỏ chặn...");
+                    }
                 }
             }
         });
@@ -169,11 +234,11 @@ public class UserEachFriend extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 int response = JOptionPane.showConfirmDialog(null,
-                        "Are you sure you want to unfriend this user?",
-                        "Confirmation", JOptionPane.YES_NO_OPTION);
+                        "Bạn có chắc muốn huỷ kết bạn?",
+                        "Xác nhận", JOptionPane.YES_NO_OPTION);
                 if (response == JOptionPane.YES_OPTION) {
                     // giữ hay bỏ gì tuỳ cái dialog này tuỳ ko quan trọng
-                    JOptionPane.showMessageDialog(null, "Unfriending...");
+                    JOptionPane.showMessageDialog(null, "Huỷ kết bạn...");
                 }
             }
         });
@@ -181,11 +246,11 @@ public class UserEachFriend extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 int response = JOptionPane.showConfirmDialog(null,
-                        "Are you sure you want to report spam this user?",
-                        "Confirmation", JOptionPane.YES_NO_OPTION);
+                        "Bạn có chắc muốn báo cáo Spam người này?",
+                        "Xác nhận", JOptionPane.YES_NO_OPTION);
                 if (response == JOptionPane.YES_OPTION) {
                     // giữ hay bỏ gì tuỳ cái dialog này tuỳ ko quan trọng
-                    JOptionPane.showMessageDialog(null, "Reporting Spam...");
+                    JOptionPane.showMessageDialog(null, "Báo cáo Spam...");
                 }
             }
         });
