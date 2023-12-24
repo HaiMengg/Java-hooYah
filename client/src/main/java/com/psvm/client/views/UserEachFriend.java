@@ -4,6 +4,10 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.time.LocalDateTime;
@@ -12,15 +16,15 @@ import java.io.IOException;
 import java.time.format.DateTimeFormatter;
 
 public class UserEachFriend extends JPanel {
-    private String avatar;
+    String avatar;
     //Mới thêm cái này vì nó cần thiết
-    private String username;
-    private String name;
-    private String lastChat;
-    private LocalDateTime lastTime;
-    private String userStatus;
+    String username;
+    String name;
+     String lastChat;
+     LocalDateTime lastTime;
+     String userStatus;
     //Mới thêm cái này vì nó cần thiết
-    private String lastChatStatus;
+     String lastChatStatus;
     UserEachFriend(String avatar, String username, String name, String lastChat, LocalDateTime lastTime, String userStatus, String lastChatStatus){
         this.avatar = avatar;
         this.username = username;
@@ -33,6 +37,35 @@ public class UserEachFriend extends JPanel {
         this.setBorder(new EmptyBorder(0,0,0,0));
         this.setBackground(Color.WHITE);
         initialize();
+        this.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (SwingUtilities.isRightMouseButton(e)){
+                    showPopupMenu(e.getX(),e.getY());
+                }
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+
+            }
+
+        });
     }
     //thêm 2 cái hàm này để lọc ra
     String getUsername(){
@@ -42,7 +75,6 @@ public class UserEachFriend extends JPanel {
         return name;
     }
     void initialize(){
-
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
 
@@ -58,14 +90,16 @@ public class UserEachFriend extends JPanel {
 
         // Component 2 (button in the second column)
         JLabel friendName = new JLabel(name);
+        friendName.setPreferredSize(new Dimension(135, friendName.getPreferredSize().height));
         gbc.gridx = 1;
         gbc.gridy = 0;
-        gbc.gridheight = 1; // Reset grid height
-        gbc.insets = new Insets(0, 0, 0, 135); // Add a 150-pixel gap to the right
+        gbc.gridheight = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL; // Stretch horizontally
         this.add(friendName, gbc);
 
         // Component 3 (button in the third column)
         JLabel friendLastTime = new JLabel(formatLocalDateTime(lastTime));
+
         gbc.gridx = 2;
         gbc.gridy = 0;
         gbc.insets = new Insets(0, 0, 0, 0); // Reset insets
@@ -81,11 +115,83 @@ public class UserEachFriend extends JPanel {
         JLabel statusMessage = createUserStatusDot(lastChatStatus);
         gbc.gridx = 2;
         gbc.gridy = 1;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.insets = new Insets(0,90,0,0);
         this.add(statusMessage, gbc);
-
     }
+    private void showPopupMenu(int x, int y){
+        JPopupMenu popupMenu = new JPopupMenu();
+        popupMenu.setBackground(Color.WHITE);
 
-    private static ImageIcon createCircularAvatar(String imagePath, int width, int height, String userStatus) {
+        JMenuItem addGroupItem = new JMenuItem("👋 Add Group");
+        addGroupItem.setFont(new Font(null,Font.PLAIN,16));
+        addGroupItem.setForeground(Color.blue);
+
+        JMenuItem blockItem = new JMenuItem("🚫 Block");
+        blockItem.setForeground(Color.red);
+        blockItem.setFont(new Font(null,Font.PLAIN,16));
+
+        JMenuItem unfriendItem = new JMenuItem("❌ Unfriend");
+        unfriendItem.setFont(new Font(null,Font.PLAIN,16));
+        unfriendItem.setForeground(Color.blue);
+
+        JMenuItem spamItem = new JMenuItem("🤐 Report Spam");
+        spamItem.setFont(new Font(null,Font.PLAIN,16));
+        spamItem.setForeground(Color.red);
+
+        popupMenu.add(addGroupItem);
+        popupMenu.add(blockItem);
+        popupMenu.add(unfriendItem);
+        popupMenu.add(spamItem);
+
+        addGroupItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(null,
+                        "You have created a group with this user!");
+            }
+        });
+
+        blockItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int response = JOptionPane.showConfirmDialog(null,
+                        "Are you sure you want to block this user?",
+                        "Confirmation", JOptionPane.YES_NO_OPTION);
+                if (response == JOptionPane.YES_OPTION) {
+                    // giữ hay bỏ gì tuỳ cái dialog này tuỳ ko quan trọng
+                    JOptionPane.showMessageDialog(null, "Blocking...");
+                }
+            }
+        });
+
+        unfriendItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int response = JOptionPane.showConfirmDialog(null,
+                        "Are you sure you want to unfriend this user?",
+                        "Confirmation", JOptionPane.YES_NO_OPTION);
+                if (response == JOptionPane.YES_OPTION) {
+                    // giữ hay bỏ gì tuỳ cái dialog này tuỳ ko quan trọng
+                    JOptionPane.showMessageDialog(null, "Unfriending...");
+                }
+            }
+        });
+        spamItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int response = JOptionPane.showConfirmDialog(null,
+                        "Are you sure you want to report spam this user?",
+                        "Confirmation", JOptionPane.YES_NO_OPTION);
+                if (response == JOptionPane.YES_OPTION) {
+                    // giữ hay bỏ gì tuỳ cái dialog này tuỳ ko quan trọng
+                    JOptionPane.showMessageDialog(null, "Reporting Spam...");
+                }
+            }
+        });
+        popupMenu.show(this, x, y);
+    }
+     static ImageIcon createCircularAvatar(String imagePath, int width, int height, String userStatus) {
         try {
             //https://stackoverflow.com/questions/14731799/bufferedimage-into-circle-shape
             BufferedImage originalImage = ImageIO.read(new File(imagePath));
@@ -110,39 +216,44 @@ public class UserEachFriend extends JPanel {
             return null;
         }
     }
-    private static String formatLocalDateTime(LocalDateTime dateTime) {
-        LocalDateTime now = LocalDateTime.now();
-
-        if (dateTime.toLocalDate().isEqual(now.toLocalDate())) {
-            // Same day
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
-            return dateTime.format(formatter);
-        } else {
-            // Different day
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-            return dateTime.format(formatter);
-        }
+    static String formatLocalDateTime(LocalDateTime dateTime) {
+//        LocalDateTime now = LocalDateTime.now();
+//
+//        if (dateTime.toLocalDate().isEqual(now.toLocalDate())) {
+//            // Same day
+//            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+//            return dateTime.format(formatter);
+//        } else {
+//            // Different day
+//            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+//            return dateTime.format(formatter);
+//        }
+        // phần bên trên khiến cho cách dòng ko đều, chưa fix đc nên xài bên dưới
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm dd-MM-yyyy");
+        return dateTime.format(formatter);
     }
 
-    private static JLabel createUserStatusDot(String userStatus) {
+
+    static JLabel createUserStatusDot(String userStatus) {
         JLabel statusLabel = new JLabel();
         statusLabel.setPreferredSize(new Dimension(20, 20));
 
         ImageIcon icon = null;
 
         if ("Online".equals(userStatus)) {
-            icon = new ImageIcon("client/src/main/resources/icon/chatWhenOnline.png");
-        } else if ("Offline".equals(userStatus)) {
-            icon = new ImageIcon("client/src/main/resources/icon/chatWhenOffline.png");
-        }
-        if (icon != null) {
-            Image scaledImage = icon.getImage().getScaledInstance(10, 10, Image.SCALE_SMOOTH);
-            ImageIcon scaledIcon = new ImageIcon(scaledImage);
-            statusLabel.setIcon(scaledIcon);
-        } else {
-            statusLabel.setVisible(false);
-        }
-        return statusLabel;
+        icon = new ImageIcon("client/src/main/resources/icon/chatWhenOnline.png");
+    } else if ("Offline".equals(userStatus)) {
+        icon = new ImageIcon("client/src/main/resources/icon/chatWhenOffline.png");
     }
+        if (icon != null) {
+        Image scaledImage = icon.getImage().getScaledInstance(10, 10, Image.SCALE_SMOOTH);
+        ImageIcon scaledIcon = new ImageIcon(scaledImage);
+        statusLabel.setIcon(scaledIcon);
+    } else {
+        statusLabel.setVisible(false);
+    }
+        return statusLabel;
+}
 
+//thêm 2 cái hàm này để lọc ra
 }

@@ -20,12 +20,15 @@ class FriendListBar extends JPanel{
         this.setOpaque(false);
         this.setPreferredSize(new Dimension(320, 820));
         this.setBorder(new MatteBorder(0,0,0,1,Color.decode("#CDD5DE")));
+
         // Add header
         FriendListHeader friendListHeader = new FriendListHeader();
         this.add(friendListHeader);
+
         // Add search option
         FriendSearchOptions friendSearchOptions = new FriendSearchOptions();
         this.add(friendSearchOptions);
+
         // friend search and add friend
         SearchFriendField searchFriendField = new SearchFriendField();
         AddFriendIconButton addFriendIconButton = new AddFriendIconButton();
@@ -34,6 +37,7 @@ class FriendListBar extends JPanel{
         friendSearchAndAdd.add(searchFriendField);
         friendSearchAndAdd.add(addFriendIconButton);
         this.add(friendSearchAndAdd);
+
         // Friend list
         ListFriendOfUser listFriendOfUser = new ListFriendOfUser();
         JScrollPane scrollFriend = new JScrollPane(listFriendOfUser);

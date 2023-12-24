@@ -8,6 +8,7 @@ import javax.swing.border.AbstractBorder;
 import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.util.Objects;
 
 public class SearchFriendField extends JTextField {
     private String placeholder = "\uD83D\uDD0E Tìm kiếm";
@@ -61,11 +62,11 @@ public class SearchFriendField extends JTextField {
 
     private void handleTextChange() {
         // Implement your logic here when text changes
-        System.out.println("Text changed: " + getText());
-
+        if (!Objects.equals(getText(), placeholder))
+            System.out.println("Text changed: " + getText());
     }
 
-    // Custom rounded border class
+
     private static class RoundedBorder extends AbstractBorder {
         private final int radius;
         private final Color color;

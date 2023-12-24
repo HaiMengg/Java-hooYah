@@ -22,6 +22,12 @@ public class ListFriendOfUser extends JPanel {
             addHoverEffect(userEachFriend);
             this.add(userEachFriend);
         }
+        UserEachFriend userEachFriend = new UserEachFriend("af","username1","tennedv","hehe", LocalDateTime.of(2005,12,4, 1,40),"Online","Online");
+        addHoverEffect(userEachFriend);
+        this.add(userEachFriend);
+        UserEachGroup userEachGroup = new UserEachGroup("asdgf","usernameGroup","Group`1","hegue",LocalDateTime.now(),"Offline","Offline");
+        addHoverEffect(userEachGroup);
+        this.add(userEachGroup);
         this.add(Box.createVerticalGlue());
     }
     private void addHoverEffect(UserEachFriend friend) {

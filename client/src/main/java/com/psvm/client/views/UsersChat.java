@@ -85,18 +85,4 @@ public class UsersChat extends JPanel {
         }
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            JFrame frame = new JFrame("User Chat Example");
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            UsersChat userChat = new UsersChat("Initial TextInitial TextInitial TextInitial TextI" +
-                    "nitial TextInitial TextInitial TextInitial " +
-                    "nitial TextInitial TextInitial TextInitial Text" +
-                    "nitial TextInitial TextInitial TextInitial Textnitial TextInitial TextInitial TextInitial TextTextInitial TextInitial Text", LocalDateTime.now());
-            frame.getContentPane().add(userChat);
-            frame.pack();
-            frame.setLocationRelativeTo(null);
-            frame.setVisible(true);
-        });
-    }
 }
