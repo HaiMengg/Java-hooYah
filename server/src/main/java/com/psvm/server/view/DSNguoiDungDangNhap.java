@@ -41,6 +41,9 @@ public class DSNguoiDungDangNhap extends JTable {
     private final TableRowSorter<DefaultTableModel> sorter;
     ScheduledExecutorService service = Executors.newScheduledThreadPool(5);
 
+    private HashMap<String, Object> userLogList = new HashMap<>();
+
+    List<Object[]> userLogListData; // Store reportID
     int index = 1;
     DSNguoiDungDangNhap(String[] columnNames){
         super(new DefaultTableModel(columnNames,0));
@@ -93,6 +96,7 @@ public class DSNguoiDungDangNhap extends JTable {
         for (Object[] row: userAccountData){
             addRowAndSort(row);
         }
+        startNextWorker();
         addRowAndSort(new Object[]{"aaiasdfasdfmen", "Nguyễn Phú Minh Bảo", dateTime4});
     }
 
@@ -100,7 +104,29 @@ public class DSNguoiDungDangNhap extends JTable {
         UserLogListThread userWorker = new UserLogListThread(new UserLogListThread.Observer() {
             @Override
             public void workerDidUpdate(HashMap<String, Object> userLogInfo) {
-               
+                if (!userLogList.equals(userLogInfo)) {
+                    userLogListData = new ArrayList<>();
+
+                    userLogInfo.forEach((index, detail) -> {
+                        Object[] userLog = new Object[3];
+                        HashMap<String, Object> castedDetail = (HashMap<String, Object>) detail;
+                        userLog[0] = (String) castedDetail.get("userId");
+                        userLog[1] = (String) castedDetail.get("fullName");
+                        userLog[2] = (LocalDate) castedDetail.get("date");
+
+                        userLogListData.add(userLog);
+                    });
+
+                    resetModelRow(); // reset table
+                    index = 1;
+                    for (Object[] row: userLogListData){
+                        Object[] newRow = new Object[row.length + 1];
+                        newRow[0] = index++;
+                        System.arraycopy(row,0,newRow,1,row.length);
+                        model.addRow(newRow);
+                    }
+                    userLogList = userLogInfo;
+                }
             }
 
         });
@@ -116,6 +142,11 @@ public class DSNguoiDungDangNhap extends JTable {
         });
 
         service.schedule(userWorker, 1000, TimeUnit.MILLISECONDS);
+    }
+    void resetModelRow() {
+        while (model.getRowCount() > 0) {
+            model.removeRow(0);
+        }
     }
     private void setColumnWidthToFitContent() {
         for (int column = 0; column < this.getColumnCount(); column++) {
