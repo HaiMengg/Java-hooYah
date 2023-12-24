@@ -107,6 +107,19 @@ public class ClientHandler implements Runnable {
 
 						break;
 					}
+					case "9d": {
+						talkCode_SingleFriendChatLog(request.getData());
+						break;
+					}
+					case "9h": {
+						talkCode_MessageSeen(request.getData());
+
+						break;
+					}
+					case "11": {
+						talkCode_SendMessage(request.getData());
+						break;
+					}
 					case "read_user": {
 						Map<String, Object> data = request.getData();
 						try {
@@ -201,6 +214,54 @@ public class ClientHandler implements Runnable {
 			}
 
 		handlerOut.writeObject(new SocketResponse(SocketResponse.RESPONSE_CODE_SUCCESS, responseData));
+		} catch (SQLException e) {
+			System.out.println(e.getMessage());
+			handlerOut.writeObject(new SocketResponse(SocketResponse.RESPONSE_CODE_FAILURE, null));
+		}
+	}
+
+	void talkCode_SingleFriendChatLog(Map<String, Object> data) throws IOException {
+		ResultSet queryResult;
+		try {
+			queryResult = db.getSingleFriendChatLog(data.get("username").toString(), data.get("conversationId").toString(), data.get("memberId").toString());
+			ResultSetMetaData queryResultMeta;
+			queryResultMeta = queryResult.getMetaData();
+
+			Vector<Map<String, Object>> responseData = new Vector<>();
+			while (queryResult.next()) {
+				Map<String, Object> row = new HashMap<>();
+				for (int i = 1; i <= queryResultMeta.getColumnCount(); i++) {
+					row.put(queryResultMeta.getColumnLabel(i), queryResult.getObject(i));
+				}
+
+				// Insert based on message id (message order)
+				int insertIndex = (int) row.get("MessageId") - 1;
+				if (responseData.size() - 1 < insertIndex) responseData.add(row);
+				else responseData.add((int) row.get("MessageId") - 1, row);
+			}
+
+			queryResult.getStatement().close();
+			handlerOut.writeObject(new SocketResponse(SocketResponse.RESPONSE_CODE_SUCCESS, responseData));
+		} catch (SQLException | NullPointerException e) {
+			System.out.println(e.getMessage());
+			handlerOut.writeObject(new SocketResponse(SocketResponse.RESPONSE_CODE_FAILURE, null));
+		}
+	}
+
+	void talkCode_MessageSeen(Map<String, Object> data) throws IOException {
+		try {
+			db.messageSeen(data.get("username").toString(), data.get("conversationId").toString());
+			handlerOut.writeObject(new SocketResponse(SocketResponse.RESPONSE_CODE_SUCCESS, null));
+		} catch (SQLException e) {
+			System.out.println(e.getMessage());
+			handlerOut.writeObject(new SocketResponse(SocketResponse.RESPONSE_CODE_FAILURE, null));
+		}
+	}
+
+	void talkCode_SendMessage(Map<String, Object> data) throws IOException {
+		try {
+			db.sendMessage(data.get("username").toString(), data.get("friendId").toString(), data.get("conversationId").toString(), data.get("content").toString());
+			handlerOut.writeObject(new SocketResponse(SocketResponse.RESPONSE_CODE_SUCCESS, null));
 		} catch (SQLException e) {
 			System.out.println(e.getMessage());
 			handlerOut.writeObject(new SocketResponse(SocketResponse.RESPONSE_CODE_FAILURE, null));
