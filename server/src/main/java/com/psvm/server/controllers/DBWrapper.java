@@ -7,6 +7,7 @@ import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -76,6 +77,33 @@ public class DBWrapper {
 		questionMarks.add(friendId);
 		questionMarks.add(friendId);
 		questionMarks.add(currentUsername);
+
+		dbConn.doPreparedStatement(sql, questionMarks);
+	}
+
+	public void BanUser(String bannedUserName) throws SQLException {
+		int Status = 2;
+		String sql = "Update hooyah.user Set Status = ? Where Username = ?; ";
+
+		Vector<Object> questionMarks = new Vector<>();
+		questionMarks.add(Status);
+		questionMarks.add(bannedUserName);
+
+		dbConn.doPreparedStatement(sql, questionMarks);
+		UpdateUserLogBanType(bannedUserName);
+	}
+
+	public void UpdateUserLogBanType(String bannedUserId)  throws SQLException {
+		int Status = 2;
+		String Detail = "Banned";
+		String date =  LocalDate.now().toString();
+		String sql = "Insert Into hooyah.userlog (UserId, Datetime, LogType, LogDetail) Value (?,?,?,?)";
+
+		Vector<Object> questionMarks = new Vector<>();
+		questionMarks.add(bannedUserId);
+		questionMarks.add(date);
+		questionMarks.add(Status);
+		questionMarks.add(Detail);
 
 		dbConn.doPreparedStatement(sql, questionMarks);
 	}
@@ -344,12 +372,12 @@ public class DBWrapper {
 		String sql = "SELECT Username, CONCAT_ws(' ',FirstName, LastName) as Hoten, Address, DoB, Gender, Email, CreationDate FROM User;";
 		Vector<Object> questionMarks = new Vector<>();
 
-		System.out.println(dbConn.doPreparedQuery(sql, questionMarks));
+
 		return dbConn.doPreparedQuery(sql, questionMarks);
 	}
 
 	public ResultSet getUserLogListWithDetailInfo() throws SQLException {
-		String sql = "Select UserId, concat_ws(' ', FirstName, LastName) as Hoten, Datetime From userlog  Join user On userlog.UserId = user.Username";
+		String sql = "Select UserId, concat_ws(' ', FirstName, LastName) as Hoten, Datetime From userlog  Left Join user On userlog.UserId = user.Username";
 		Vector<Object> questionMarks = new Vector<>();
 //		questionMarks.add(dateTime);
 
@@ -363,6 +391,15 @@ public class DBWrapper {
 
 		return dbConn.doPreparedQuery(sql, questionMarks);
 	}
+
+	public ResultSet getConversationCreateDateInfo(String conId) throws SQLException {
+		String sql = "Select DateTime From hooyah.conversationlog Where LogType = 0 and ConversationId = ?";
+		Vector<Object> questionMarks = new Vector<>();
+		questionMarks.add(conId);
+
+		return dbConn.doPreparedQuery(sql, questionMarks);
+	}
+
 
 	public ResultSet getConversationMemberInfo(String conversationId) throws SQLException {
 		String sql = "Select ConversationId, MemberId, concat_ws(' ', FirstName, LastName) as Hoten, IsAdmin From conversationmember Join user On MemberId = Username\n" +
