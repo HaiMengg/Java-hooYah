@@ -52,6 +52,30 @@ public class DBWrapper {
 		return dbConn.doPreparedQuery(sql, questionMarks);
 	}
 
+	public ResultSet searchUser(String currentUsername, String otherUsername) throws SQLException {
+		String sql = "SELECT u.Username, fq.TargetId\n" +
+				"FROM User u\n" +
+				"LEFT JOIN FriendRequest fq ON fq.SenderId = ? AND fq.TargetId = u.Username\n" +
+				"WHERE u.Username LIKE ? AND u.Username!=?;";
+
+		Vector<Object> questionMarks = new Vector<>();
+		questionMarks.add(currentUsername);
+		questionMarks.add("%" + otherUsername + "%");
+		questionMarks.add(currentUsername);
+
+		return dbConn.doPreparedQuery(sql, questionMarks);
+	}
+
+	public void sendFriendRequest(String currentUsername, String otherUsername) throws SQLException {
+		String sql = "INSERT INTO FriendRequest (SenderId, TargetId, Datetime) VALUES (?, ?, current_timestamp());";
+
+		Vector<Object> questionMarks = new Vector<>();
+		questionMarks.add(currentUsername);
+		questionMarks.add(otherUsername);
+
+		dbConn.doPreparedStatement(sql, questionMarks);
+	}
+
 	public void respondFriendRequest(String currentUsername, String senderId) throws SQLException {
 		// Remove first sql line (before first semicolon) when done testing
 		String sql1 = "INSERT INTO FriendRequest (SenderId, TargetId, Datetime) VALUES (?, ?, current_timestamp());";
