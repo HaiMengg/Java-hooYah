@@ -142,7 +142,7 @@ public class DBWrapper {
 		return dbConn.doPreparedQuery(sql, questionMarks);
 	}
 
-	public ResultSet[] getFriendMessageList(String currentUsername, String friendSearch, String chatSearch) throws SQLException {
+	public ResultSet[] getFriendMessageList(String currentUsername, String friendSearch, String chatSearch, boolean isGroup) throws SQLException {
 		String sql1 = "WITH ranked_data AS (\n" +
 				"\tSELECT cv.ConversationId, cv.ConversationName, cvmes.MessageId, cvmes.SenderId, cvmem2.MemberId, cvmes.Datetime, \n" +
 				"    cvmes.Content, cv.IsGroup,\n" +
@@ -157,7 +157,7 @@ public class DBWrapper {
 				")\n" +
 				"SELECT DISTINCT rd.ConversationId, rd.ConversationName, rd.MessageId, rd.MemberId, SenderId, rd.Datetime, Content, IsGroup\n" +
 				"FROM ranked_data rd\n" +
-				"WHERE rn = 1 AND NOT EXISTS (\n" +
+				"WHERE rn = 1 AND IsGroup=? AND NOT EXISTS (\n" +
 				"\tSELECT *\n" +
 				"    FROM MessageSeen ms\n" +
 				"    WHERE ms.MessageId = rd.MessageId AND ms.ConversationId = rd.ConversationId AND ms.SeenId = ?\n" +
@@ -172,6 +172,7 @@ public class DBWrapper {
 		questionMarks1.add(currentUsername);
 		questionMarks1.add("%" + chatSearch + "%");
 		questionMarks1.add(currentUsername);
+		questionMarks1.add(isGroup);
 		questionMarks1.add(currentUsername);
 		questionMarks1.add(currentUsername);
 
@@ -191,7 +192,7 @@ public class DBWrapper {
 				")\n" +
 				"SELECT DISTINCT rd.ConversationId, rd.ConversationName, rd.MessageId, rd.MemberId, SenderId, rd.Datetime, Content, IsGroup\n" +
 				"FROM ranked_data rd\n" +
-				"WHERE rn = 1 AND NOT EXISTS (\n" +
+				"WHERE rn = 1 AND IsGroup=? AND NOT EXISTS (\n" +
 				"\tSELECT *\n" +
 				"    FROM MessageSeen ms\n" +
 				"    WHERE ms.MessageId = rd.MessageId AND ms.ConversationId = rd.ConversationId AND ms.SeenId = ?\n" +
@@ -206,6 +207,7 @@ public class DBWrapper {
 		questionMarks2.add(currentUsername);
 		questionMarks2.add("%" + chatSearch + "%");
 		questionMarks2.add(currentUsername);
+		questionMarks2.add(isGroup);
 		questionMarks2.add(currentUsername);
 		questionMarks2.add(currentUsername);
 
@@ -225,7 +227,7 @@ public class DBWrapper {
 				")\n" +
 				"SELECT DISTINCT rd.ConversationId, rd.ConversationName, rd.MessageId, rd.MemberId, SenderId, rd.Datetime, Content, IsGroup\n" +
 				"FROM ranked_data rd\n" +
-				"WHERE rn = 1 AND EXISTS (\n" +
+				"WHERE rn = 1 AND IsGroup=? AND EXISTS (\n" +
 				"\tSELECT *\n" +
 				"    FROM MessageSeen ms\n" +
 				"    WHERE ms.MessageId = rd.MessageId AND ms.ConversationId = rd.ConversationId AND ms.SeenId = ?\n" +
@@ -236,6 +238,7 @@ public class DBWrapper {
 		questionMarks3.add(currentUsername);
 		questionMarks3.add("%" + chatSearch + "%");
 		questionMarks3.add(currentUsername);
+		questionMarks3.add(isGroup);
 		questionMarks3.add(currentUsername);
 
 		ResultSet rs3 = dbConn.doPreparedQuery(sql3, questionMarks3);
@@ -245,20 +248,16 @@ public class DBWrapper {
 		Vector<Object> questionMarks4 = new Vector<>();
 		// If the client is search for chat message's content then no Unmessaged friends will be displayed
 		if (chatSearch.isEmpty()) {
-			sql4 = "SELECT f.UserId, f.FriendId\n" +
-					"FROM Friend f\n" +
-					"WHERE (f.UserId = ? AND f.FriendId LIKE ? OR f.UserId LIKE ? AND f.FriendId = ?) AND NOT EXISTS (\n" +
-					"\tSELECT *\n" +
-					"    FROM Conversation cv\n" +
-					"    JOIN ConversationMember cvmem ON cv.ConversationId = cvmem.ConversationId\n" +
-					"    JOIN ConversationMember cvmem2 ON cvmem.ConversationId = cvmem2.ConversationId\n" +
-					"    WHERE cvmem.MemberId = f.UserId AND cvmem2.MemberId = f.FriendId AND cvmem.MemberId != cvmem2.MemberId AND cv.IsGroup = false\n" +
-					");";
+			sql4 = "SELECT cv.ConversationId, cvmem.MemberId\n" +
+					"FROM Conversation cv\n" +
+					"JOIN ConversationMember cvmem ON cv.ConversationId = cvmem.ConversationId\n" +
+					"LEFT JOIN ConversationMessage cvmes ON cv.ConversationId = cvmes.ConversationId \n" +
+					"WHERE cv.IsGroup=false AND cvmem.MemberId != ? AND cvmem.MemberId LIKE ?\n" +
+					"GROUP BY cv.ConversationId, cvmem.MemberId\n" +
+					"HAVING COUNT(cvmes.MessageId) = 0;";
 
 			questionMarks4.add(currentUsername);
 			questionMarks4.add("%" + friendSearch + "%");
-			questionMarks4.add("%" + friendSearch + "%");
-			questionMarks4.add(currentUsername);
 		}
 		else {
 			sql4 = "SELECT * FROM Emptiness;";
@@ -268,21 +267,15 @@ public class DBWrapper {
 		return new ResultSet[] {rs1, rs2, rs3, rs4};
 	}
 
-	public ResultSet getSingleFriendChatLog(String currentUsername, String conversationId, String memberId) throws SQLException {
+	public ResultSet getSingleFriendChatLog(String currentUsername, String conversationId) throws SQLException {
 		String sql = "SELECT *\n" +
 				"FROM ConversationMessage cvmes\n" +
 				"JOIN ConversationMember cvmem ON cvmem.ConversationId = cvmes.ConversationId\n" +
-				"WHERE cvmem.MemberId=? AND (cvmes.ConversationId=? OR EXISTS (\n" +
-				"\tSELECT *\n" +
-				"    FROM ConversationMember cvmem2\n" +
-				"    JOIN Conversation cv ON cv.ConversationId = cvmem2.ConversationId\n" +
-				"    WHERE cvmem.ConversationId = cvmem2.ConversationId AND cvmem2.MemberId=? AND cv.IsGroup=false\n" +
-				"));";
+				"WHERE cvmem.MemberId=? AND cvmes.ConversationId=?";
 
 		Vector<Object> questionMarks = new Vector<>();
 		questionMarks.add(currentUsername);
 		questionMarks.add(conversationId);
-		questionMarks.add(memberId);
 
 		return dbConn.doPreparedQuery(sql, questionMarks);
 	}
@@ -320,27 +313,21 @@ public class DBWrapper {
 		dbConn.doBatchPreparedStatement(batchSql.toArray(new String[batchSql.size()]), batchQuestionMarks.toArray(new Vector[batchQuestionMarks.size()]));
 	}
 
-	public void sendMessage(String currentUsername, String friendId, String conversationId, String content) throws SQLException {
+	public void sendMessage(String currentUsername, String conversationId, String content) throws SQLException {
 		String sql1 = "SELECT COUNT(cvmes.MessageId) as MessageCount\n" +
 				"FROM ConversationMessage cvmes\n" +
-				"WHERE cvmes.ConversationId=? OR EXISTS (\n" +
-				"\tSELECT *\n" +
-				"    FROM ConversationMember cvmem\n" +
-				"    JOIN Conversation cv ON cv.ConversationId = cvmem.ConversationId\n" +
-				"    WHERE cvmes.ConversationId = cvmem.ConversationId AND cvmem.MemberId=? AND cv.IsGroup=false\n" +
-				")\n" +
+				"WHERE cvmes.ConversationId=?" +
 				"GROUP BY cvmes.ConversationId;";
 
 		Vector<Object> questionMarks1 = new Vector<>();
 		questionMarks1.add(conversationId);
-		questionMarks1.add(friendId);
 
 		ResultSet resultSet1 = dbConn.doPreparedQuery(sql1, questionMarks1);
 		int messageCount = 0;
 		if (resultSet1.next()) messageCount = resultSet1.getInt(1);
 		resultSet1.close();
-
-		String sql2 = "INSERT INTO MessageSeen VALUES (?, ?, ?, current_timestamp(), ?, ?)";
+		System.out.println(messageCount);
+		String sql2 = "INSERT INTO ConversationMessage VALUES (?, ?, ?, current_timestamp(), ?, ?)";
 		Vector<Object> questionMarks2 = new Vector<>();
 		questionMarks2.add(messageCount + 1);
 		questionMarks2.add(conversationId);

@@ -236,7 +236,7 @@ public class ClientHandler implements Runnable {
 
 	void talkCode_FriendMessageList(Map<String, Object> data) throws IOException {
 		try {
-			ResultSet[] queryResult = db.getFriendMessageList(data.get("username").toString(), data.get("friendSearch").toString(), data.get("chatSearch").toString());
+			ResultSet[] queryResult = db.getFriendMessageList(data.get("username").toString(), data.get("friendSearch").toString(), data.get("chatSearch").toString(), (boolean) data.get("isGroup"));
 
 			Vector<Map<String, Object>> responseData = new Vector<>();
 			for (ResultSet qrEach: queryResult) {
@@ -263,7 +263,7 @@ public class ClientHandler implements Runnable {
 
 	void talkCode_SingleFriendChatLog(Map<String, Object> data) throws IOException {
 		try {
-			ResultSet queryResult = db.getSingleFriendChatLog(data.get("username").toString(), data.get("conversationId").toString(), data.get("memberId").toString());
+			ResultSet queryResult = db.getSingleFriendChatLog(data.get("username").toString(), data.get("conversationId").toString());
 			ResultSetMetaData queryResultMeta;
 			queryResultMeta = queryResult.getMetaData();
 
@@ -300,7 +300,7 @@ public class ClientHandler implements Runnable {
 
 	void talkCode_SendMessage(Map<String, Object> data) throws IOException {
 		try {
-			db.sendMessage(data.get("username").toString(), data.get("friendId").toString(), data.get("conversationId").toString(), data.get("content").toString());
+			db.sendMessage(data.get("username").toString(), data.get("conversationId").toString(), data.get("content").toString());
 			handlerOut.writeObject(new SocketResponse(SocketResponse.RESPONSE_CODE_SUCCESS, null));
 		} catch (SQLException e) {
 			System.out.println(e.getMessage());
