@@ -33,7 +33,7 @@ public class ListFriendOfUser extends JPanel {
     private Box vertical = Box.createVerticalBox();
     private JPanel currentSelectedFriend;
     private String currentSelectedFriendId;
-    ListFriendOfUser(){
+    public ListFriendOfUser(){
         // Initialize this GUI component
         setBackground(new Color(255,255,255,255));
         setLayout(new BorderLayout());
@@ -62,8 +62,6 @@ public class ListFriendOfUser extends JPanel {
                 friend.setBackground(Color.decode("#ADD8E6"));
                 currentSelectedFriend = friend;
                 currentSelectedFriendId = friend.getConversationId();
-
-                System.out.println(currentSelectedFriendId);
 
                 LocalData.setSelectedConversation(currentSelectedFriendId);
             }
@@ -174,8 +172,6 @@ public class ListFriendOfUser extends JPanel {
             unseenOfflineMessages.removeAll(totalUnseenOfflineMessages);
             totalUnseenOfflineMessages.addAll(unseenOfflineMessages);
             for (Map<String, Object> friend: unseenOfflineMessages) {
-                System.out.println(friend.get("ConversationId").toString());
-                System.out.println(messageIndexer);
                 String convoName = (Boolean.parseBoolean(friend.get("IsGroup").toString())) ? friend.get("ConversationName").toString() : friend.get("MemberId").toString();
                 if (!messageIndexer.contains(friend.get("ConversationId").toString())) {
                     UserEachFriend userEachFriend = new UserEachFriend(friend.get("ConversationId").toString(), "af", convoName, friend.get("Content").toString(), ((Timestamp) friend.get("Datetime")).toLocalDateTime(),"Offline");
@@ -226,10 +222,9 @@ public class ListFriendOfUser extends JPanel {
             noMessages.removeAll(totalNoMessages);
             totalNoMessages.addAll(noMessages);
             for (Map<String, Object> friend: noMessages) {
-                String convoName = (friend.get("UserId").toString().equals(LocalData.getCurrentUsername())) ? friend.get("FriendId").toString() : friend.get("UserId").toString();
-                UserEachFriend userEachFriend = new UserEachFriend("fdsafsd", "af", convoName, "", LocalDateTime.of(LocalDate.now(), LocalTime.now()),"");
+                UserEachFriend userEachFriend = new UserEachFriend(friend.get("ConversationId").toString(), "af", friend.get("MemberId").toString(), "", LocalDateTime.of(LocalDate.now(), LocalTime.now()),"");
                 thisPanel.add(userEachFriend, unseenOnlineMessagesIndex + unseenOfflineMessagesIndex + seenMessagesIndex + noMessagesIndex);
-//                messageIndexer.add(unseenOnlineMessagesIndex + unseenOfflineMessagesIndex + seenMessagesIndex + noMessagesIndex, friend.get("ConversationId").toString());
+                messageIndexer.add(unseenOnlineMessagesIndex + unseenOfflineMessagesIndex + seenMessagesIndex + noMessagesIndex, friend.get("ConversationId").toString());
                 addHoverEffect(userEachFriend);
 
 //                // Manually set the selected effect

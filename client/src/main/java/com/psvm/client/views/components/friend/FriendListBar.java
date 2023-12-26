@@ -1,6 +1,8 @@
 package com.psvm.client.views.components.friend;
 
 import com.psvm.client.controllers.FriendMessageListRequest;
+import com.psvm.client.settings.LocalData;
+import com.psvm.client.views.FriendListChoosingCategory;
 import com.psvm.shared.socket.SocketResponse;
 
 import javax.swing.*;
@@ -28,25 +30,27 @@ class FriendListBarThread extends SwingWorker<Void, Map<String, Object>> {
     ObjectOutputStream socketOut;
     private String friendSearch;
     private String chatSearch;
+    private boolean isGroup;
     private Observer observer;
 
     public interface Observer {
         public void workerDidUpdate(Vector<Map<String, Object>> message);
     }
 
-    public FriendListBarThread(Socket clientSocket, ObjectInputStream socketIn, ObjectOutputStream socketOut, String friendSearch, String chatSearch, Observer observer) {
+    public FriendListBarThread(Socket clientSocket, ObjectInputStream socketIn, ObjectOutputStream socketOut, String friendSearch, String chatSearch, boolean isGroup, Observer observer) {
         this.clientSocket = clientSocket;
         this.socketIn = socketIn;
         this.socketOut = socketOut;
         this.friendSearch = friendSearch;
         this.chatSearch = chatSearch;
+        this.isGroup = isGroup;
 
         this.observer = observer;
     }
 
     @Override
     protected Void doInBackground() throws Exception {
-        FriendMessageListRequest request = new FriendMessageListRequest(clientSocket, socketIn, socketOut, friendSearch, chatSearch);
+        FriendMessageListRequest request = new FriendMessageListRequest(clientSocket, socketIn, socketOut, friendSearch, chatSearch, isGroup);
         SocketResponse response = request.talk();
 
         for (Map<String, Object> datum: response.getData()) {
@@ -79,7 +83,9 @@ public class FriendListBar extends JPanel{
     private JButton selectedButton;
     //private JButton currentButton;
 
+    private JScrollPane scrollFriend;
     private ListFriendOfUser listFriendOfUser;
+    private ListGroupOfUser listGroupOfUser;
     private FriendSearchOptions friendSearchOptions;
     private SearchFriendField searchFriendField;
     private String previousFriendSearch = "";
@@ -96,9 +102,11 @@ public class FriendListBar extends JPanel{
         // Add header
         FriendListHeader friendListHeader = new FriendListHeader();
         this.add(friendListHeader);
+
         // Add search option
         friendSearchOptions = new FriendSearchOptions();
         this.add(friendSearchOptions);
+
         // friend search and add friend
         searchFriendField = new SearchFriendField();
         AddFriendIconButton addFriendIconButton = new AddFriendIconButton();
@@ -108,8 +116,7 @@ public class FriendListBar extends JPanel{
         friendSearchAndAdd.add(addFriendIconButton);
         this.add(friendSearchAndAdd);
         // Friend list
-        listFriendOfUser = new ListFriendOfUser();
-        JScrollPane scrollFriend = new JScrollPane(listFriendOfUser);
+        scrollFriend = new JScrollPane();
         scrollFriend.setBorder(null);
         scrollFriend.setPreferredSize(new Dimension(320, 630));
         scrollFriend.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
@@ -124,6 +131,10 @@ public class FriendListBar extends JPanel{
         this.add(scrollFriend);
 
 
+        // Setup choosing panel
+        FriendListChoosingCategory friendListChoosingCategory = new FriendListChoosingCategory(scrollFriend);
+        this.add(friendListChoosingCategory);
+
         /* Multithreading + Socket */
         try {
             socket = new Socket(SOCKET_HOST, SOCKET_PORT);
@@ -136,20 +147,51 @@ public class FriendListBar extends JPanel{
     }
 
     protected void startNextWorker() {
-        String searchOption = friendSearchOptions.getCurrentOption();
+        String searchOption = LocalData.getSelectedSearchOption();
+        String searchSubOption = friendSearchOptions.getCurrentOption();
+        boolean isGroup = false;
         String chatSearch = "";
         String friendSearch = "";
+
         switch (searchOption) {
-            case "Tìm người theo tên đăng nhập": {
+            case "friend": {
+                isGroup = false;
+
+                if (listGroupOfUser != null) listGroupOfUser = null;
+                if (listFriendOfUser == null) {
+                    listFriendOfUser = new ListFriendOfUser();
+                    scrollFriend.setViewportView(listFriendOfUser);
+                }
+                break;
+            }
+            case "friendOnline": {
+                isGroup = false;
+
+                break;
+            }
+            case "group": {
+                isGroup = true;
+
+                if (listFriendOfUser != null) listFriendOfUser = null;
+                if (listGroupOfUser == null) {
+                    listGroupOfUser = new ListGroupOfUser();
+                    scrollFriend.setViewportView(listGroupOfUser);
+                }
+                break;
+            }
+            case "friendBlocked": {
+                isGroup = false;
+                break;
+            }
+        }
+
+        switch (searchSubOption) {
+            case "Tìm người/đoạn chat": {
                 chatSearch = "";
                 friendSearch = searchFriendField.isFocused() ? searchFriendField.getText() : "";
                 break;
             }
-            case "Tìm người theo tên": {
-                chatSearch = "";
-                break;
-            }
-            case "Tìm đoạn chat": {
+            case "Tìm theo nội dung đoạn chat": {
                 chatSearch = searchFriendField.isFocused() ? searchFriendField.getText() : "";
                 break;
             }
@@ -157,17 +199,41 @@ public class FriendListBar extends JPanel{
 
         String finalChatSearch = chatSearch;
         String finalFriendSearch = friendSearch;
-        FriendListBarThread worker = new FriendListBarThread(socket, socketIn, socketOut, friendSearch, chatSearch, new FriendListBarThread.Observer() {
+        FriendListBarThread worker = new FriendListBarThread(socket, socketIn, socketOut, friendSearch, chatSearch, isGroup, new FriendListBarThread.Observer() {
             @Override
-            public void workerDidUpdate(Vector<Map<String, Object>> friends) {
+            public void workerDidUpdate(Vector<Map<String, Object>> result) {
                 SwingUtilities.invokeLater(() -> {
-                    if (!finalChatSearch.equals(previousSearchContent) || !finalFriendSearch.equals(previousFriendSearch))
-                        listFriendOfUser.resetList();
+                    switch (searchOption) {
+                        case "friend": {
+                            if (!finalChatSearch.equals(previousSearchContent) || !finalFriendSearch.equals(previousFriendSearch))
+                                listFriendOfUser.resetList();
 
-                    listFriendOfUser.setData(friends);
+                            listFriendOfUser.setData(result);
 
-                    previousFriendSearch = finalFriendSearch;
-                    previousSearchContent = finalChatSearch;
+                            previousFriendSearch = finalFriendSearch;
+                            previousSearchContent = finalChatSearch;
+
+                            break;
+                        }
+                        case "group": {
+                            if (!finalChatSearch.equals(previousSearchContent) || !finalFriendSearch.equals(previousFriendSearch))
+                                listGroupOfUser.resetList();
+
+                            listGroupOfUser.setData(result);
+
+                            previousFriendSearch = finalFriendSearch;
+                            previousSearchContent = finalChatSearch;
+
+                            break;
+                        }
+                    }
+
+//                    JViewport viewport = scrollFriend.getViewport();
+//                    // Remove all components from the viewport's view
+//                    viewport.removeAll();
+                    // Revalidate and repaint to reflect the changes
+                    scrollFriend.revalidate();
+                    scrollFriend.repaint();
                 });
             }
         });
