@@ -9,6 +9,7 @@ import javax.swing.border.MatteBorder;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
 
 public class MainClient {
     private final JFrame jfrm;

@@ -9,12 +9,12 @@ import java.net.Socket;
 import java.util.Map;
 
 public class FriendMessageListRequest extends SocketTalk {
-	public FriendMessageListRequest(Socket socket, ObjectInputStream socketIn, ObjectOutputStream socketOut, String friendSearch, String chatSearch, boolean isGroup) {
+	public FriendMessageListRequest(Socket socket, ObjectInputStream socketIn, ObjectOutputStream socketOut, String friendSearch, String chatSearch, String searchOption) {
 		super(socket, socketIn, socketOut, SocketTalk.TALK_CODE_FRIEND_MESSAGE_LIST, Map.of(
 				"username", LocalData.getCurrentUsername(),
 				"friendSearch", friendSearch,
 				"chatSearch", chatSearch,
-				"isGroup", isGroup
+				"searchOption", searchOption
 			)
 		);
 	}

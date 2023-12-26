@@ -73,7 +73,7 @@ public class ListFriendOfUser extends JPanel {
         Box thisPanel = vertical;
         UserEachFriend conversation = (UserEachFriend) thisPanel.getComponent(childIndex);
 
-        remove(conversation);
+        thisPanel.remove(conversation);
 
         switch (newMessageType) {
             case 1: {
@@ -85,26 +85,43 @@ public class ListFriendOfUser extends JPanel {
                 return 0;
             }
             case 2: {
+                int index = unseenOnlineMessagesIndex;
+
                 String conversationId = messageIndexer.get(childIndex);
                 messageIndexer.remove(conversationId);
 
-                if (unseenOnlineMessagesIndex <= messageIndexer.size() - 1)
-                    messageIndexer.add(unseenOnlineMessagesIndex, conversationId);
+                if (index <= messageIndexer.size() - 1)
+                    messageIndexer.add(index, conversationId);
                 else messageIndexer.add(conversationId);
 
-                thisPanel.add(conversation, unseenOnlineMessagesIndex);
-                return unseenOnlineMessagesIndex;
+                thisPanel.add(conversation, index);
+                return index;
             }
             case 3: {
+                int index = unseenOnlineMessagesIndex + unseenOfflineMessagesIndex;
+
                 String conversationId = messageIndexer.get(childIndex);
                 messageIndexer.remove(conversationId);
 
-                if (unseenOnlineMessagesIndex + unseenOfflineMessagesIndex <= messageIndexer.size() - 1)
-                    messageIndexer.add(unseenOnlineMessagesIndex + unseenOfflineMessagesIndex, conversationId);
+                if (index <= messageIndexer.size() - 1)
+                    messageIndexer.add(index, conversationId);
                 else messageIndexer.add(conversationId);
 
-                thisPanel.add(conversation, unseenOnlineMessagesIndex + unseenOfflineMessagesIndex);
-                return unseenOnlineMessagesIndex + unseenOfflineMessagesIndex;
+                thisPanel.add(conversation, index);
+                return index;
+            }
+            case 4: {
+                int index = unseenOnlineMessagesIndex + unseenOfflineMessagesIndex + seenMessagesIndex;
+
+                String conversationId = messageIndexer.get(childIndex);
+                messageIndexer.remove(conversationId);
+
+                if (index <= messageIndexer.size() - 1)
+                    messageIndexer.add(index, conversationId);
+                else messageIndexer.add(conversationId);
+
+                thisPanel.add(conversation, index);
+                return index;
             }
         }
 
@@ -130,7 +147,8 @@ public class ListFriendOfUser extends JPanel {
     }
 
     public void manuallySelectMessage(String conversationId) {
-        UserEachFriend selectMessage = (UserEachFriend) getComponent(messageIndexer.indexOf(conversationId));
+        Box thisPanel = vertical;
+        UserEachFriend selectMessage = (UserEachFriend) thisPanel.getComponent(messageIndexer.indexOf(conversationId));
 
         selectMessage.setBackground(Color.decode("#ADD8E6"));
         currentSelectedFriend = selectMessage;
@@ -138,9 +156,17 @@ public class ListFriendOfUser extends JPanel {
 
     public void setData(Vector<Map<String, Object>> friends) {
         Box thisPanel = vertical;
+
+        ArrayList<String> deletedConvos = new ArrayList<>();
         SwingUtilities.invokeLater(() -> {
+            /* Temp variables */
+            Vector<Map<String, Object>> tempCloneLocal;
+            Vector<Map<String, Object>> tempCloneGlobal;
+
             /* Add unseen messages while online */
             Vector<Map<String, Object>> unseenOnlineMessages = (Vector<Map<String, Object>>) friends.get(0).get("data");
+            tempCloneLocal = (Vector<Map<String, Object>>) unseenOnlineMessages.clone();
+            tempCloneGlobal = (Vector<Map<String, Object>>) totalUnseenOnlineMessages.clone();
             // If unseenOnlineMessages is empty after this line then the data is the same
             unseenOnlineMessages.removeAll(totalUnseenOnlineMessages);
             totalUnseenOnlineMessages.addAll(unseenOnlineMessages);
@@ -165,9 +191,20 @@ public class ListFriendOfUser extends JPanel {
                     manuallySelectMessage(currentSelectedFriendId);
                 unseenOnlineMessagesIndex++;
             }
+            // If tempCloneGlobal is note empty after this line then the data has been shrunk
+            tempCloneGlobal.removeAll(tempCloneLocal);
+            for (Map<String, Object> datum: tempCloneGlobal) {
+                deletedConvos.add(datum.get("ConversationId").toString());
+                unseenOnlineMessagesIndex--;
+                // Remove from Object list
+                totalUnseenOnlineMessages.remove(datum);
+            }
+
 
             /* Add unseen messages while offline */
             Vector<Map<String, Object>> unseenOfflineMessages = (Vector<Map<String, Object>>) friends.get(1).get("data");
+            tempCloneLocal = (Vector<Map<String, Object>>) unseenOfflineMessages.clone();
+            tempCloneGlobal = (Vector<Map<String, Object>>) totalUnseenOfflineMessages.clone();
             // If seenMessages is empty after this line then the data is the same
             unseenOfflineMessages.removeAll(totalUnseenOfflineMessages);
             totalUnseenOfflineMessages.addAll(unseenOfflineMessages);
@@ -190,9 +227,20 @@ public class ListFriendOfUser extends JPanel {
                     manuallySelectMessage(currentSelectedFriendId);
                 unseenOfflineMessagesIndex++;
             }
+            // If tempCloneGlobal is note empty after this line then the data has been shrunk
+            tempCloneGlobal.removeAll(tempCloneLocal);
+            for (Map<String, Object> datum: tempCloneGlobal) {
+                deletedConvos.add(datum.get("ConversationId").toString());
+                unseenOfflineMessagesIndex--;
+                // Remove from Object list
+                totalUnseenOfflineMessages.remove(datum);
+            }
+
 
             /* Add seen messages */
             Vector<Map<String, Object>> seenMessages = (Vector<Map<String, Object>>) friends.get(2).get("data");
+            tempCloneLocal = (Vector<Map<String, Object>>) seenMessages.clone();
+            tempCloneGlobal = (Vector<Map<String, Object>>) totalSeenMessages.clone();
             // If seenMessages is empty after this line then the data is the same
             seenMessages.removeAll(totalSeenMessages);
             totalSeenMessages.addAll(seenMessages);
@@ -215,23 +263,60 @@ public class ListFriendOfUser extends JPanel {
                     manuallySelectMessage(currentSelectedFriendId);
                 seenMessagesIndex++;
             }
+            // If tempCloneGlobal is note empty after this line then the data has been shrunk
+            tempCloneGlobal.removeAll(tempCloneLocal);
+            for (Map<String, Object> datum: tempCloneGlobal) {
+                deletedConvos.add(datum.get("ConversationId").toString());
+                seenMessagesIndex--;
+                // Remove from Object list
+                totalSeenMessages.remove(datum);
+            }
+
 
             /* Add other friends with no messages */
             Vector<Map<String, Object>> noMessages = (Vector<Map<String, Object>>) friends.get(3).get("data");
-            // If seenMessages is empty after this line then the data is the same
+            tempCloneLocal = (Vector<Map<String, Object>>) noMessages.clone();
+            tempCloneGlobal = (Vector<Map<String, Object>>) totalNoMessages.clone();
+            // If no messages is empty after this line then the data is the same
             noMessages.removeAll(totalNoMessages);
             totalNoMessages.addAll(noMessages);
             for (Map<String, Object> friend: noMessages) {
-                UserEachFriend userEachFriend = new UserEachFriend(friend.get("ConversationId").toString(), "af", friend.get("MemberId").toString(), "", LocalDateTime.of(LocalDate.now(), LocalTime.now()),"");
-                thisPanel.add(userEachFriend, unseenOnlineMessagesIndex + unseenOfflineMessagesIndex + seenMessagesIndex + noMessagesIndex);
-                messageIndexer.add(unseenOnlineMessagesIndex + unseenOfflineMessagesIndex + seenMessagesIndex + noMessagesIndex, friend.get("ConversationId").toString());
-                addHoverEffect(userEachFriend);
+                if (!messageIndexer.contains(friend.get("ConversationId").toString())) {
+                    UserEachFriend userEachFriend = new UserEachFriend(friend.get("ConversationId").toString(), "af", friend.get("MemberId").toString(), "", LocalDateTime.of(LocalDate.now(), LocalTime.now()),"");
+                    thisPanel.add(userEachFriend, unseenOnlineMessagesIndex + unseenOfflineMessagesIndex + seenMessagesIndex + noMessagesIndex);
+                    messageIndexer.add(unseenOnlineMessagesIndex + unseenOfflineMessagesIndex + seenMessagesIndex + noMessagesIndex, friend.get("ConversationId").toString());
+                    addHoverEffect(userEachFriend);
+                }
+                else {
+                    int newIndex = moveMessage(messageIndexer.indexOf(friend.get("ConversationId").toString()), 4);
+                    UserEachFriend userEachFriend = (UserEachFriend) thisPanel.getComponent(newIndex);
+                    userEachFriend.setData(friend.get("MemberId").toString(), friend.get("Content").toString(), ((Timestamp) friend.get("Datetime")).toLocalDateTime(),"");
+                }
 
-//                // Manually set the selected effect
-//                if (currentSelectedFriendId != null && currentSelectedFriendId.equals(friend.get("ConversationId").toString()))
-//                    manuallySelectMessage(currentSelectedFriendId);
-//                seenMessagesIndex++;
+                // Manually set the selected effect
+                if (currentSelectedFriendId != null && currentSelectedFriendId.equals(friend.get("ConversationId").toString()))
+                    manuallySelectMessage(currentSelectedFriendId);
+                noMessagesIndex++;
             }
+            // If tempCloneGlobal is note empty after this line then the data has been shrunk
+            tempCloneGlobal.removeAll(tempCloneLocal);
+            for (Map<String, Object> datum: tempCloneGlobal) {
+                deletedConvos.add(datum.get("ConversationId").toString());
+                noMessagesIndex--;
+                // Remove from Object list
+                totalNoMessages.remove(datum);
+            }
+
+
+            /* Check if any convos have been deleted since last update, if true, remove display of that convo from the UI */
+            for (String deletedConvo: deletedConvos) {
+                int deletedConvoIndex = messageIndexer.indexOf(deletedConvo);
+
+                UserEachFriend conversation = (UserEachFriend) thisPanel.getComponent(deletedConvoIndex);
+                thisPanel.remove(conversation);
+            }
+            // Remove from indexer
+            messageIndexer.removeAll(deletedConvos);
 
             thisPanel.revalidate();
         });

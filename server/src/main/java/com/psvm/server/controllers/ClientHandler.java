@@ -236,7 +236,25 @@ public class ClientHandler implements Runnable {
 
 	void talkCode_FriendMessageList(Map<String, Object> data) throws IOException {
 		try {
-			ResultSet[] queryResult = db.getFriendMessageList(data.get("username").toString(), data.get("friendSearch").toString(), data.get("chatSearch").toString(), (boolean) data.get("isGroup"));
+			ResultSet[] queryResult = new ResultSet[0];
+			switch (data.get("searchOption").toString()) {
+				case "friend": {
+					queryResult = db.getFriendMessageList(data.get("username").toString(), data.get("friendSearch").toString(), data.get("chatSearch").toString(), false);
+					break;
+				}
+				case "friendOnline": {
+					queryResult = db.getOnlineFriendMessageList(data.get("username").toString(), data.get("friendSearch").toString(), data.get("chatSearch").toString());
+					break;
+				}
+				case "group": {
+					queryResult = db.getFriendMessageList(data.get("username").toString(), data.get("friendSearch").toString(), data.get("chatSearch").toString(), true);
+					break;
+				}
+				case "friendBlocked": {
+					queryResult = db.getBlockedFriendMessageList(data.get("username").toString(), data.get("friendSearch").toString(), data.get("chatSearch").toString());
+					break;
+				}
+			}
 
 			Vector<Map<String, Object>> responseData = new Vector<>();
 			for (ResultSet qrEach: queryResult) {

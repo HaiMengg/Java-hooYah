@@ -30,27 +30,27 @@ class FriendListBarThread extends SwingWorker<Void, Map<String, Object>> {
     ObjectOutputStream socketOut;
     private String friendSearch;
     private String chatSearch;
-    private boolean isGroup;
+    private String searchOption;
     private Observer observer;
 
     public interface Observer {
         public void workerDidUpdate(Vector<Map<String, Object>> message);
     }
 
-    public FriendListBarThread(Socket clientSocket, ObjectInputStream socketIn, ObjectOutputStream socketOut, String friendSearch, String chatSearch, boolean isGroup, Observer observer) {
+    public FriendListBarThread(Socket clientSocket, ObjectInputStream socketIn, ObjectOutputStream socketOut, String friendSearch, String chatSearch, String searchOption, Observer observer) {
         this.clientSocket = clientSocket;
         this.socketIn = socketIn;
         this.socketOut = socketOut;
         this.friendSearch = friendSearch;
         this.chatSearch = chatSearch;
-        this.isGroup = isGroup;
+        this.searchOption = searchOption;
 
         this.observer = observer;
     }
 
     @Override
     protected Void doInBackground() throws Exception {
-        FriendMessageListRequest request = new FriendMessageListRequest(clientSocket, socketIn, socketOut, friendSearch, chatSearch, isGroup);
+        FriendMessageListRequest request = new FriendMessageListRequest(clientSocket, socketIn, socketOut, friendSearch, chatSearch, searchOption);
         SocketResponse response = request.talk();
 
         for (Map<String, Object> datum: response.getData()) {
@@ -85,7 +85,9 @@ public class FriendListBar extends JPanel{
 
     private JScrollPane scrollFriend;
     private ListFriendOfUser listFriendOfUser;
+    private ListFriendOfUser listOnlineFriendOfUser;
     private ListGroupOfUser listGroupOfUser;
+    private ListFriendOfUser listBlockedFriendOfUser;
     private FriendSearchOptions friendSearchOptions;
     private SearchFriendField searchFriendField;
     private String previousFriendSearch = "";
@@ -149,38 +151,59 @@ public class FriendListBar extends JPanel{
     protected void startNextWorker() {
         String searchOption = LocalData.getSelectedSearchOption();
         String searchSubOption = friendSearchOptions.getCurrentOption();
-        boolean isGroup = false;
         String chatSearch = "";
         String friendSearch = "";
 
         switch (searchOption) {
             case "friend": {
-                isGroup = false;
-
+                //Remove current list being displayed (if any)
+                if (listOnlineFriendOfUser != null) listOnlineFriendOfUser = null;
                 if (listGroupOfUser != null) listGroupOfUser = null;
+                if (listBlockedFriendOfUser != null) listBlockedFriendOfUser = null;
+
                 if (listFriendOfUser == null) {
                     listFriendOfUser = new ListFriendOfUser();
                     scrollFriend.setViewportView(listFriendOfUser);
                 }
+
                 break;
             }
             case "friendOnline": {
-                isGroup = false;
+                //Remove current list being displayed (if any)
+                if (listFriendOfUser != null) listFriendOfUser = null;
+                if (listGroupOfUser != null) listGroupOfUser = null;
+                if (listBlockedFriendOfUser != null) listBlockedFriendOfUser = null;
+
+                if (listOnlineFriendOfUser == null) {
+                    listOnlineFriendOfUser = new ListFriendOfUser();
+                    scrollFriend.setViewportView(listOnlineFriendOfUser);
+                }
 
                 break;
             }
             case "group": {
-                isGroup = true;
-
+                //Remove current list being displayed (if any)
                 if (listFriendOfUser != null) listFriendOfUser = null;
+                if (listOnlineFriendOfUser != null) listOnlineFriendOfUser = null;
+                if (listBlockedFriendOfUser != null) listBlockedFriendOfUser = null;
+
                 if (listGroupOfUser == null) {
                     listGroupOfUser = new ListGroupOfUser();
                     scrollFriend.setViewportView(listGroupOfUser);
                 }
+
                 break;
             }
             case "friendBlocked": {
-                isGroup = false;
+                if (listFriendOfUser != null) listFriendOfUser = null;
+                if (listOnlineFriendOfUser != null) listOnlineFriendOfUser = null;
+                if (listGroupOfUser != null) listGroupOfUser = null;
+
+                if (listBlockedFriendOfUser == null) {
+                    listBlockedFriendOfUser = new ListFriendOfUser();
+                    scrollFriend.setViewportView(listBlockedFriendOfUser);
+                }
+
                 break;
             }
         }
@@ -199,7 +222,7 @@ public class FriendListBar extends JPanel{
 
         String finalChatSearch = chatSearch;
         String finalFriendSearch = friendSearch;
-        FriendListBarThread worker = new FriendListBarThread(socket, socketIn, socketOut, friendSearch, chatSearch, isGroup, new FriendListBarThread.Observer() {
+        FriendListBarThread worker = new FriendListBarThread(socket, socketIn, socketOut, friendSearch, chatSearch, searchOption, new FriendListBarThread.Observer() {
             @Override
             public void workerDidUpdate(Vector<Map<String, Object>> result) {
                 SwingUtilities.invokeLater(() -> {
@@ -215,11 +238,33 @@ public class FriendListBar extends JPanel{
 
                             break;
                         }
+                        case "friendOnline": {
+                            if (!finalChatSearch.equals(previousSearchContent) || !finalFriendSearch.equals(previousFriendSearch))
+                                listOnlineFriendOfUser.resetList();
+
+                            listOnlineFriendOfUser.setData(result);
+
+                            previousFriendSearch = finalFriendSearch;
+                            previousSearchContent = finalChatSearch;
+
+                            break;
+                        }
                         case "group": {
                             if (!finalChatSearch.equals(previousSearchContent) || !finalFriendSearch.equals(previousFriendSearch))
                                 listGroupOfUser.resetList();
 
                             listGroupOfUser.setData(result);
+
+                            previousFriendSearch = finalFriendSearch;
+                            previousSearchContent = finalChatSearch;
+
+                            break;
+                        }
+                        case "friendBlocked": {
+                            if (!finalChatSearch.equals(previousSearchContent) || !finalFriendSearch.equals(previousFriendSearch))
+                                listBlockedFriendOfUser.resetList();
+
+                            listBlockedFriendOfUser.setData(result);
 
                             previousFriendSearch = finalFriendSearch;
                             previousSearchContent = finalChatSearch;
