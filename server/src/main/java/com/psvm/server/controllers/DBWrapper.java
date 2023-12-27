@@ -26,7 +26,6 @@ public class DBWrapper {
 	}
 
 	public void createUser(String username, String fName, String lName, String password, String address, LocalDateTime dob, boolean isMale, String email) throws SQLException {
-		System.out.println(username);
 		String sql = "INSERT INTO User VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, '', current_timestamp())";
 
 		Vector<Object> questionMarks = new Vector<>();
@@ -42,8 +41,19 @@ public class DBWrapper {
 		dbConn.doPreparedStatement(sql, questionMarks);
 	}
 
+	public void resetPassword(String username, String email, String hashedPassword) throws SQLException {
+		String sql = "UPDATE User SET Password=? WHERE Username=? AND Email=?";
+
+		Vector<Object> questionMarks = new Vector<>();
+		questionMarks.add(hashedPassword);
+		questionMarks.add(username);
+		questionMarks.add(email);
+
+		dbConn.doPreparedStatement(sql, questionMarks);
+	}
+
 	public ResultSet getUser(String username, String hashedPassword) throws SQLException {
-		String sql = "SELECT COUNT(Username) as UserFound FROM User WHERE Username=? AND Password=? GROUP BY Username;";
+		String sql = "SELECT COUNT(Username) as UserFound, Status FROM User WHERE Username=? AND Password=?;";
 
 		Vector<Object> questionMarks = new Vector<>();
 		questionMarks.add(username);
@@ -51,6 +61,35 @@ public class DBWrapper {
 
 		return dbConn.doPreparedQuery(sql, questionMarks);
 	}
+
+	public void logActivitySignIn(String username) throws SQLException {
+		String sql1 = "INSERT INTO UserLog VALUES (?, current_timestamp(), 0, '')";
+
+		Vector<Object> questionMarks1 = new Vector<>();
+		questionMarks1.add(username);
+
+		String sql2 = "UPDATE User SET Status=1 WHERE Username=?";
+
+		Vector<Object> questionMarks2 = new Vector<>();
+		questionMarks2.add(username);
+
+		dbConn.doBatchPreparedStatement(new String[] {sql1, sql2}, new Vector[] {questionMarks1, questionMarks2});
+	}
+
+	public void logActivitySignOut(String username) throws SQLException {
+		String sql1 = "INSERT INTO UserLog VALUES (?, current_timestamp(), 1, '')";
+
+		Vector<Object> questionMarks1 = new Vector<>();
+		questionMarks1.add(username);
+
+		String sql2 = "UPDATE User SET Status=0 WHERE Username=?";
+
+		Vector<Object> questionMarks2 = new Vector<>();
+		questionMarks2.add(username);
+
+		dbConn.doBatchPreparedStatement(new String[] {sql1, sql2}, new Vector[] {questionMarks1, questionMarks2});
+	}
+
 
 	public ResultSet searchUser(String currentUsername, String otherUsername) throws SQLException {
 		String sql = "SELECT u.Username, fq.TargetId\n" +

@@ -48,11 +48,22 @@ public class ClientHandler implements Runnable {
 				switch (request.getTalkCode()) {
 					case "1": {
 						talkCode_CreateUser(request.getData());
-
+						break;
+					}
+					case "2": {
+						talkCode_ForgetPassword(request.getData());
 						break;
 					}
 					case "3": {
 						talkCode_GetUser(request.getData());
+						break;
+					}
+					case "3_1": {
+						talkCode_LogSignInActivity(request.getData());
+						break;
+					}
+					case "3_2": {
+						talkCode_LogSignOutActivity(request.getData());
 						break;
 					}
 					case "4a_1": {
@@ -171,7 +182,7 @@ public class ClientHandler implements Runnable {
 
 	void talkCode_ForgetPassword(Map<String, Object> data) throws IOException {
 		try {
-			db.createUser(data.get("username").toString(), data.get("firstName").toString(), data.get("lastName").toString(), data.get("password").toString(), data.get("address").toString(), (LocalDateTime) data.get("dob"), (boolean) data.get("gender"), data.get("email").toString());
+			db.resetPassword(data.get("username").toString(), data.get("email").toString(), data.get("hashedPassword").toString());
 			handlerOut.writeObject(new SocketResponse(SocketResponse.RESPONSE_CODE_SUCCESS, null));
 		} catch (SQLException e) {
 			System.out.println(e.getMessage());
@@ -191,9 +202,29 @@ public class ClientHandler implements Runnable {
 					responseData.add(Map.of(queryResultMeta.getColumnLabel(i), queryResult.getObject(i)));
 				}
 			}
-
+			System.out.println(responseData);
 			queryResult.getStatement().close();
 			handlerOut.writeObject(new SocketResponse(SocketResponse.RESPONSE_CODE_SUCCESS, responseData));
+		} catch (SQLException e) {
+			System.out.println(e.getMessage());
+			handlerOut.writeObject(new SocketResponse(SocketResponse.RESPONSE_CODE_FAILURE, null));
+		}
+	}
+
+	void talkCode_LogSignInActivity(Map<String, Object> data) throws IOException {
+		try {
+			db.logActivitySignIn(data.get("username").toString());
+			handlerOut.writeObject(new SocketResponse(SocketResponse.RESPONSE_CODE_SUCCESS, null));
+		} catch (SQLException e) {
+			System.out.println(e.getMessage());
+			handlerOut.writeObject(new SocketResponse(SocketResponse.RESPONSE_CODE_FAILURE, null));
+		}
+	}
+
+	void talkCode_LogSignOutActivity(Map<String, Object> data) throws IOException {
+		try {
+			db.logActivitySignOut(data.get("username").toString());
+			handlerOut.writeObject(new SocketResponse(SocketResponse.RESPONSE_CODE_SUCCESS, null));
 		} catch (SQLException e) {
 			System.out.println(e.getMessage());
 			handlerOut.writeObject(new SocketResponse(SocketResponse.RESPONSE_CODE_FAILURE, null));
