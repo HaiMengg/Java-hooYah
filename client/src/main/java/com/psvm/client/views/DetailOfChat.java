@@ -15,7 +15,7 @@ public class DetailOfChat extends JPanel {
     DetailOfChat(){
         setPreferredSize(new Dimension(250,764));
         this.setBackground((Color.WHITE));
-        renderFriend();
+        renderGroup();
     }
     void removeComponent(){
         Component[] componentList = this.getComponents();
@@ -35,6 +35,8 @@ public class DetailOfChat extends JPanel {
     void renderGroup(){
         removeComponent();
         //call function here
+        DetailOfAGroup detailOfAGroup = new DetailOfAGroup("test","Hehefdsfbsdfnsdfn");
+        this.add(detailOfAGroup);
         this.revalidate();
         this.repaint();
     }
