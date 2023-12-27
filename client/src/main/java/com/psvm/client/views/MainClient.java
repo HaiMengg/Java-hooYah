@@ -18,17 +18,20 @@ public class MainClient {
         jfrm.setIconImage(favicon.getImage());
         // Give the frame an initial size.
         jfrm.setSize(1440, 820);
+        jfrm.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         // Terminate the program when the user closes
         // the application.
-        //FriendListBar
-        jfrm.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        FriendListBar friendListBar = new FriendListBar();
-        jfrm.add(friendListBar,BorderLayout.WEST);
 
         //Chat Section
         ChatSection chatSection = new ChatSection();
         jfrm.add(chatSection,BorderLayout.CENTER);
+
+        //FriendListBar
+        FriendListBar friendListBar = new FriendListBar(); //Khi implement xong thì nhớ bỏ chatsection vào constructor của friendListBar
+        jfrm.add(friendListBar,BorderLayout.WEST);
+
+
         //Set visible
         jfrm.setVisible(true);
     }

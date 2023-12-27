@@ -11,7 +11,9 @@ import java.time.LocalDateTime;
 
 public class ListFriendOfUser extends JPanel {
     private UserEachFriend currentSelectedFriend;
+
     ListFriendOfUser(){
+
         this.setBackground(Color.white);
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 

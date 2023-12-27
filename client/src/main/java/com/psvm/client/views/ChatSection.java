@@ -5,12 +5,16 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 public class ChatSection extends JPanel {
+
     ChatSection(){
         this.setLayout(new BorderLayout());
         int scrollbarWidth = UIManager.getLookAndFeelDefaults().getInt("ScrollBar.width");
         this.setPreferredSize(new Dimension(1120 - scrollbarWidth,820));
 
-        //header
+
+        //Detail
+        DetailOfChat detailOfChat = new DetailOfChat();
+        this.add(detailOfChat,BorderLayout.EAST);
 
         //ChatScreen
         ChatBody chatBody = new ChatBody();
@@ -19,8 +23,5 @@ public class ChatSection extends JPanel {
         chatBodyScroll.setViewportView(chatBody);
         this.add(chatBodyScroll, BorderLayout.CENTER);
 
-        //Detail
-        DetailOfChat detailOfChat = new DetailOfChat();
-        this.add(detailOfChat,BorderLayout.EAST);
     }
 }
