@@ -3,14 +3,9 @@ package com.psvm.server.controllers;
 import com.psvm.server.models.DBConnection;
 import com.psvm.server.models.DBInteraction;
 
-import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Vector;
 
@@ -51,6 +46,31 @@ public class DBWrapper {
 
 		dbConn.doPreparedStatement(sql, questionMarks);
 	}
+	public void updateUser(String id, String username, String fName, String lName, String address, LocalDateTime dob, boolean isMale, String email,  LocalDateTime creationDate) throws SQLException {
+		String sql = "Update hooyah.user\n" +
+				"Set Username=?, FirstName=?, LastName=?, Address= ?, Dob= ?, Gender= ?, Email=?, CreationDate=?\n" +
+				"where Username = ?";
+
+		Vector<Object> questionMarks = new Vector<>();
+		questionMarks.add(username);
+		questionMarks.add(fName);
+		questionMarks.add(lName);
+		questionMarks.add(address);
+		questionMarks.add(dob);
+		questionMarks.add(isMale);
+		questionMarks.add(email);
+		questionMarks.add(creationDate);
+		questionMarks.add(id);
+		dbConn.doPreparedStatement(sql, questionMarks);
+	}
+	public void deleteUser(String id) throws SQLException {
+		String sql = "Delete from User Where Username = ?";
+
+		Vector<Object> questionMarks = new Vector<>();
+		questionMarks.add(id);
+		dbConn.doPreparedStatement(sql, questionMarks);
+	}
+
 
 	public ResultSet getUser(String username, String hashedPassword) throws SQLException {
 		String sql = "SELECT COUNT(Username) as UserFound, Status FROM User WHERE Username=? AND Password=?;";
@@ -167,23 +187,86 @@ public class DBWrapper {
 		questionMarks.add(bannedUserName);
 
 		dbConn.doPreparedStatement(sql, questionMarks);
-		UpdateUserLogBanType(bannedUserName);
+		UpdateUserLog(bannedUserName, 2);
 	}
 
-	public void UpdateUserLogBanType(String bannedUserId)  throws SQLException {
-		int Status = 2;
-		String Detail = "Banned";
-		String date =  LocalDate.now().toString();
+	public void UnBanUser(String bannedUserName) throws SQLException {
+		int Status = 0;
+		String sql = "Update hooyah.user Set Status = ? Where Username = ?; ";
+
+		Vector<Object> questionMarks = new Vector<>();
+		questionMarks.add(Status);
+		questionMarks.add(bannedUserName);
+
+		dbConn.doPreparedStatement(sql, questionMarks);
+		UpdateUserLog(bannedUserName, 0);
+	}
+
+	public void UpdateUserLog(String userId, int status)  throws SQLException {
+
+		String Detail = "";
+		switch (status) {
+			case 0:
+				Detail = "Login";
+				break;
+			case 1:
+				Detail = "LogOut";
+				break;
+			case 2:
+				Detail = "Banned";
+				break;
+			case 3:
+				Detail = "Password changed";
+				break;
+		}
+		String date =  LocalDateTime.now().toString();
 		String sql = "Insert Into hooyah.userlog (UserId, Datetime, LogType, LogDetail) Value (?,?,?,?)";
 
 		Vector<Object> questionMarks = new Vector<>();
-		questionMarks.add(bannedUserId);
+		questionMarks.add(userId);
 		questionMarks.add(date);
-		questionMarks.add(Status);
+		questionMarks.add(status);
 		questionMarks.add(Detail);
 
 		dbConn.doPreparedStatement(sql, questionMarks);
 	}
+
+	public ResultSet DiplayUserLogWithType(String userId, int type) throws SQLException {
+		String Detail = "";
+		switch (type) {
+			case 0:
+				Detail = "Login";
+				break;
+			case 1:
+				Detail = "LogOut";
+				break;
+			case 2:
+				Detail = "Banned";
+				break;
+			case 3:
+				Detail = "Password changed";
+				break;
+		}
+
+		String sql = "SELECT Datetime FROM hooyah.userlog Where UserId = ? and LogType = ? Order by DateTime DESC;";
+
+		Vector<Object> questionMarks = new Vector<>();
+		questionMarks.add(userId);
+		questionMarks.add(type);
+
+        return dbConn.doPreparedQuery(sql, questionMarks);
+    }
+
+	public ResultSet FriendListOfUser(String userId) throws SQLException {
+
+		String sql = "Select concat_ws(' ', u.FirstName, u.Lastname) as Hoten, f.Status From hooyah.friend as f Join hooyah.user as u On u.Username = f.FriendId Where UserId=?";
+
+		Vector<Object> questionMarks = new Vector<>();
+		questionMarks.add(userId);
+
+		return dbConn.doPreparedQuery(sql, questionMarks);
+	}
+
 
 	public ResultSet getFriendList(String currentUsername) throws SQLException {
 		String sql = "SELECT FriendId FROM Friend WHERE UserId=? OR FriendId=?";
@@ -698,12 +781,12 @@ public class DBWrapper {
 	}
 
 	public ResultSet getUserListInfo() throws SQLException {
-		String sql = "SELECT Username, CONCAT_ws(' ',FirstName, LastName) as Hoten, Address, DoB, Gender, Email, CreationDate FROM User;";
+		String sql = "SELECT Username, CONCAT_ws(' ',FirstName, LastName) as Hoten, Address, DoB, Gender, Email, CreationDate, Status FROM User;";
 		Vector<Object> questionMarks = new Vector<>();
-
 
 		return dbConn.doPreparedQuery(sql, questionMarks);
 	}
+
 
 	public ResultSet getUserLogListWithDetailInfo() throws SQLException {
 		String sql = "Select UserId, concat_ws(' ', FirstName, LastName) as Hoten, Datetime From userlog  Left Join user On userlog.UserId = user.Username";
