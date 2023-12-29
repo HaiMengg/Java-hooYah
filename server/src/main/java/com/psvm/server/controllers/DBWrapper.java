@@ -35,7 +35,6 @@ public class DBWrapper {
 
 		dbConn.doPreparedStatement(sql, questionMarks);
 	}
-
 	public void resetPassword(String username, String email, String hashedPassword) throws SQLException {
 		String sql = "UPDATE User SET Password=? WHERE Username=? AND Email=?";
 
@@ -109,7 +108,6 @@ public class DBWrapper {
 
 		dbConn.doBatchPreparedStatement(new String[] {sql1, sql2}, new Vector[] {questionMarks1, questionMarks2});
 	}
-
 
 	public ResultSet searchUser(String currentUsername, String otherUsername) throws SQLException {
 		String sql = "SELECT u.Username, fq.TargetId\n" +
@@ -752,6 +750,45 @@ public class DBWrapper {
 		return dbConn.doPreparedQuery(sql, questionMarks);
 	}
 
+	public void UserBlockUser(String blocker, String blockedUser) throws SQLException {
+		int blockStatus = 1;
+		int blockedStatus = 2;
+		String sql = "Update friend Set Status=? Where UserId=? and FriendId=?;";
+		Vector<Object> questionMarks = new Vector<>();
+		questionMarks.add(blockStatus);
+		questionMarks.add(blocker);
+		questionMarks.add(blockedUser);
+
+
+		dbConn.doPreparedStatement(sql, questionMarks);
+		UserBeingBlockedByUser(blocker, blockedUser);
+	}
+
+	public void UserBeingBlockedByUser(String blocker, String blockedUser) throws SQLException {
+		int blockedStatus = 2;
+		String sql = "Update friend Set Status=? Where UserId=? and FriendId=?;";
+		Vector<Object> questionMarks = new Vector<>();
+		questionMarks.add(blockedStatus);
+		questionMarks.add(blockedUser);
+		questionMarks.add(blocker);
+
+		dbConn.doPreparedStatement(sql, questionMarks);
+	}
+	public void UserUnBlockUser(String blocker, String blockedUser) throws SQLException {
+		int normarlStatus = 0;
+		String sql = "Update hooyah.friend Set Status = ? Where UserId= ? and FriendId= ?;\n" +
+				"Update hooyah.friend Set Status = ? Where UserId= ? and FriendId= ?";
+		Vector<Object> questionMarks = new Vector<>();
+		questionMarks.add(normarlStatus);
+		questionMarks.add(blocker);
+		questionMarks.add(blockedUser);
+		questionMarks.add(normarlStatus);
+		questionMarks.add(blockedUser);
+		questionMarks.add(blocker);
+
+		dbConn.doPreparedStatement(sql, questionMarks);
+	}
+
 	public ResultSet getSuitableConversationId(String memId, String dateTime) throws SQLException {
 		String sql = "Select ConversationId From conversationmember cMsg Where cMsg.MemberId = ? and cMsg.ConversationId = (\n" +
 				"\tSelect cM.ConversationId From conversationmessage cM Where year( cM.Datetime ) = ? and cM.ConversationId = cMsg.ConversationId \n" +
@@ -822,11 +859,89 @@ public class DBWrapper {
 		return dbConn.doPreparedQuery(sql, questionMarks);
 	}
 
+	public ResultSet getConversationMemberId(String conversationId) throws SQLException {
+		String sql = "Select MemberId From conversationmember Where ConversationId = ?";
+		Vector<Object> questionMarks = new Vector<>();
+		questionMarks.add(conversationId);
+
+		return dbConn.doPreparedQuery(sql, questionMarks);
+	}
+
 	public ResultSet getSpamReportInfo() throws SQLException {
 		String sql = "SELECT * FROM spamreport;";
 		Vector<Object> questionMarks = new Vector<>();
 
 		return dbConn.doPreparedQuery(sql, questionMarks);
+	}
+	public ResultSet getHighestConvId() throws SQLException {
+		String sql = "SELECT max(ConversationId) as HighestId FROM Conversation;";
+		Vector<Object> questionMarks = new Vector<>();
+
+		return dbConn.doPreparedQuery(sql, questionMarks);
+	}
+	public void reportUser(String reporterId, String reportedId) throws SQLException {
+		String sql = "Insert into spamreport value (?, ?, current_timestamp());";
+
+		Vector<Object> questionMarks = new Vector<>();
+		questionMarks.add(reporterId);
+		questionMarks.add(reportedId);
+
+		dbConn.doPreparedStatement(sql, questionMarks);
+	}
+	public void AddMemWhenUareAdmin(String conId,String adminId, String userId) throws SQLException {
+		String sql = "Insert into ConversationMember value (?, ?, true), (?, ?, false)";
+
+		Vector<Object> questionMarks = new Vector<>();
+		questionMarks.add(conId);
+		questionMarks.add(adminId);
+		questionMarks.add(conId);
+		questionMarks.add(userId);
+
+		dbConn.doPreparedStatement(sql, questionMarks);
+	}
+	public void UpdateConvLog(String conId, String userId, int logType) throws SQLException {
+		String detail = "";
+		switch (logType) {
+			case 0: {
+				detail = "Created";
+				break;
+			}
+			case 1: {
+				detail = "Name Changed";
+				break;
+			}
+			case 2: {
+				detail = "Member added";
+				break;
+			}
+			case 3: {
+				detail = "Member deleted";
+				break;
+			}
+			case 4: {
+				detail = "Made admin";
+				break;
+			}
+		}
+		String sql = "Insert into Conversationlog value (?, current_timestamp(), ?, ?, ?)";
+
+		Vector<Object> questionMarks = new Vector<>();
+		questionMarks.add(conId);
+		questionMarks.add(logType);
+		questionMarks.add(userId);
+		questionMarks.add(detail);
+
+		dbConn.doPreparedStatement(sql, questionMarks);
+	}
+	public void CreateNewConv(String newConId, String newConName, boolean isGroup) throws SQLException {
+		String sql = "Insert into Conversation value (?, ?, ?, false);";
+
+		Vector<Object> questionMarks = new Vector<>();
+		questionMarks.add(newConId);
+		questionMarks.add(newConName);
+		questionMarks.add(isGroup);
+
+		dbConn.doPreparedStatement(sql, questionMarks);
 	}
 	public void close() {
 		dbConn.close();

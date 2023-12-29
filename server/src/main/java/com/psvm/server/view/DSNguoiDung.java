@@ -470,8 +470,7 @@ class DSNguoiDungTable extends JTable{
                             JOptionPane.showMessageDialog(null, "Sai format ngày", "Lỗi", JOptionPane.ERROR_MESSAGE);
                             return;  // Exit the method if there's an error
                         }
-//                        java.sql.Date finalDob = java.sql.Date.valueOf(dob); // 2 cái này để thêm vào database vì nó là sql Date
-//                        java.sql.Date finalCreationDate = java.sql.Date.valueOf(creationDate);
+//
                         // Update data in the selected row
                         getModel().setValueAt(updatedUsername, selectedRow, 1);
                         getModel().setValueAt(updatedFullName, selectedRow, 2);
@@ -480,7 +479,6 @@ class DSNguoiDungTable extends JTable{
                         getModel().setValueAt(updatedGender, selectedRow, 5);
                         getModel().setValueAt(updatedEmail, selectedRow, 6);
                         getModel().setValueAt(creationDate, selectedRow, 7);
-
 
                         Object[] selectedUser = userListData.get(selectedRow);
                         try {
