@@ -51,7 +51,6 @@ public class MainClient {
 
         LogActivityLoginRequest logActivityLoginRequest = new LogActivityLoginRequest(socket, socketIn, socketOut, LocalData.getCurrentUsername());
         SocketResponse logActivityLoginRequestResponse = logActivityLoginRequest.talk();
-        System.out.println(logActivityLoginRequestResponse.getResponseCode());
         // If logging fails then stop the program
         if (logActivityLoginRequestResponse.getResponseCode() == SocketResponse.RESPONSE_CODE_FAILURE) return;
 
@@ -75,7 +74,7 @@ public class MainClient {
             public void windowClosing(WindowEvent e) {
                 LogActivityLogoutRequest logActivityLogoutRequest = new LogActivityLogoutRequest(socket, socketIn, socketOut, LocalData.getCurrentUsername());
                 SocketResponse logActivityLogoutRequestResponse = logActivityLogoutRequest.talk();
-                // If logging fails then stop the program
+                // If logging fails then not allow the program to exit
                 if (logActivityLogoutRequestResponse.getResponseCode() == SocketResponse.RESPONSE_CODE_SUCCESS) System.exit(0);
             }
         });
@@ -88,6 +87,7 @@ public class MainClient {
         ChatSection chatSection = new ChatSection();
         jfrm.add(chatSection,BorderLayout.CENTER);
 
+        jfrm.setLocationRelativeTo(null);
         //Set visible
         jfrm.setVisible(true);
     }

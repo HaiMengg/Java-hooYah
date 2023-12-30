@@ -1,5 +1,9 @@
 package com.psvm.client.views;
 
+import com.psvm.client.controllers.DeleteChatHistoryRequest;
+import com.psvm.client.controllers.SendMessageRequest;
+import com.psvm.shared.socket.SocketResponse;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -13,22 +17,77 @@ import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 import java.rmi.ConnectIOException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+
+class DeleteChatHistoryButtonThread extends Thread {
+    private Socket clientSocket;
+    ObjectInputStream socketIn;
+    ObjectOutputStream socketOut;
+
+    private String conversationId;
+
+    private int responseCode;
+
+    public DeleteChatHistoryButtonThread(Socket clientSocket, ObjectInputStream socketIn, ObjectOutputStream socketOut, String conversationId) {
+        this.clientSocket = clientSocket;
+        this.socketIn = socketIn;
+        this.socketOut = socketOut;
+
+        this.conversationId = conversationId;
+    }
+
+    @Override
+    public void run() {
+        super.run();
+        DeleteChatHistoryRequest request = new DeleteChatHistoryRequest(clientSocket, socketIn, socketOut, conversationId);
+        SocketResponse response = request.talk();
+
+        responseCode = response.getResponseCode();
+    }
+
+    public int getResponseCode() {
+        return responseCode;
+    }
+}
 
 public class DetailOfAFriend extends JPanel {
+    // Multithreading + Socket
+    ScheduledExecutorService service = Executors.newScheduledThreadPool(2);
+    final String SOCKET_HOST = "localhost";
+    final int SOCKET_PORT = 5555;
+    Socket deleteChatHistorySocket;
+    ObjectInputStream deleteChatHistorySocketIn;
+    ObjectOutputStream deleteChatHistorySocketOut;
+
+    private String conversationId;
     private String avatar;
     private String name;
     private String username;
     private boolean blocked = false;
 
-    DetailOfAFriend(String avatar, String name, String username) {
+    DetailOfAFriend(String conversationId, String avatar, String name, String username) {
         this.setPreferredSize(new Dimension(250, 754));
         this.setBackground(Color.WHITE);
+        this.conversationId = conversationId;
         this.avatar = avatar;
         this.name = name;
         this.username = username;
 
         initialize();
+
+        /* Multithreading + Socket */
+        try {
+            deleteChatHistorySocket = new Socket(SOCKET_HOST, SOCKET_PORT);
+            deleteChatHistorySocketIn = new ObjectInputStream(deleteChatHistorySocket.getInputStream());
+            deleteChatHistorySocketOut = new ObjectOutputStream(deleteChatHistorySocket.getOutputStream());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     void initialize() {
@@ -141,9 +200,8 @@ public class DetailOfAFriend extends JPanel {
                         "Bạn có chắc muốn xoá lịch sử chat?",
                         "Xác nhận", JOptionPane.YES_NO_OPTION);
                 if (response == JOptionPane.YES_OPTION) {
-
-                    // giữ hay bỏ gì tuỳ cái dialog này tuỳ ko quan trọng
-                    JOptionPane.showMessageDialog(null, "Xoá lịch sử chat...");
+                    DeleteChatHistoryButtonThread deleteChatHistoryButtonThread = new DeleteChatHistoryButtonThread(deleteChatHistorySocket, deleteChatHistorySocketIn, deleteChatHistorySocketOut, conversationId);
+                    deleteChatHistoryButtonThread.start();
                 }
             }
         });
