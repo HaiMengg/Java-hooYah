@@ -2,6 +2,7 @@ package com.psvm.client.views;
 
 import com.psvm.client.controllers.DeleteChatHistoryRequest;
 import com.psvm.client.controllers.SendMessageRequest;
+import com.psvm.client.settings.LocalData;
 import com.psvm.shared.socket.SocketResponse;
 
 import javax.imageio.ImageIO;
@@ -136,10 +137,8 @@ public class DetailOfAFriend extends JPanel {
         add(searchTextLabel, gbc);
 
         gbc.gridy++;
-        JTextArea searchField = new JTextArea(5, 20);
+        JTextField searchField = new JTextField(20);
         gbc.weightx = 1.0;
-        searchField.setLineWrap(true);
-        searchField.setWrapStyleWord(true);
         searchField.setBackground(Color.decode("#EEF1F4"));
         searchField.setBorder(new LineBorder(new Color(0, 0, 0, 0), 1, true));
         add(searchField, gbc);
@@ -162,21 +161,12 @@ public class DetailOfAFriend extends JPanel {
         add(clearChat, gbc);
 
 
-        searchField.getDocument().addDocumentListener(new DocumentListener() {
+        searchField.addActionListener(new AbstractAction()
+        {
             @Override
-            public void insertUpdate(DocumentEvent e) {
-                // Handle text insertion
-                System.out.println("Text inserted: " + searchField.getText());
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                // Handle text removal
-                System.out.println("Text removed: " + searchField.getText());
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
+            public void actionPerformed(ActionEvent e)
+            {
+                LocalData.setConversationScrollSearch(searchField.getText());
             }
         });
 

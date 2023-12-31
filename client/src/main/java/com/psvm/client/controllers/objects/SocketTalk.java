@@ -29,6 +29,9 @@ public class SocketTalk {
 	public final static String TALK_CODE_SEARCH_CHAT_CONTENT = "9f";
 	public final static String TALK_CODE_MESSAGE_SEEN = "9h";
 	public final static String TALK_CODE_RENAME_CHAT = "10b";
+	public final static String TALK_CODE_NON_GROUP_MEMBER_LIST = "10c_1";
+	public final static String TALK_CODE_ADD_GROUP_MEMBER = "10c";
+	public final static String TALK_CODE_REMOVE_GROUP_MEMBER = "10d";
 	public final static String TALK_CODE_GROUP_MEMBER_LIST = "10e";
 	public final static String TALK_CODE_LEAVE_GROUP = "10f";
 	public final static String TALK_CODE_SET_MEMBER_ADMIN_STATUS = "10g";

@@ -346,7 +346,7 @@ public class DBWrapper {
 				"\tSELECT *\n" +
 				"    FROM MessageSeen ms\n" +
 				"    WHERE ms.MessageId = rd.MessageId AND ms.ConversationId = rd.ConversationId AND ms.SeenId = ?\n" +
-				") AND rd.Datetime < all(\n" +
+				") AND rd.Datetime < any(\n" +
 				"\tSELECT ul.Datetime\n" +
 				"    FROM UserLog ul\n" +
 				"    WHERE ul.UserId = ? AND ul.LogType = 0\n" +
@@ -752,11 +752,12 @@ public class DBWrapper {
 		dbConn.doPreparedStatement(sql, questionMarks);
 	}
 
-	public void getNonGroupMember(String conversationId) throws SQLException {
-		String sql = "SELECT * FROM User u WHERE NOT EXISTS (SELECT * FROM ConversationMember cvmem WHERE cvmem.ConversationId=? AND u.Username = cvmem.MemberId)";
+	public ResultSet getNonGroupMember(String searchUsername, String conversationId) throws SQLException {
+		String sql = "SELECT Username FROM User u WHERE Username LIKE ? AND NOT EXISTS (SELECT * FROM ConversationMember cvmem WHERE cvmem.ConversationId=? AND u.Username = cvmem.MemberId)";
 		Vector<Object> questionMarks = new Vector<>();
+		questionMarks.add("%" + searchUsername + "%");
 		questionMarks.add(conversationId);
-		dbConn.doPreparedStatement(sql, questionMarks);
+		return dbConn.doPreparedQuery(sql, questionMarks);
 	}
 
 	public void addGroupMember(String conversationId, String newMemberId) throws SQLException {

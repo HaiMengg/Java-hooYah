@@ -153,6 +153,19 @@ public class ClientHandler implements Runnable {
 						talkCode_RenameChat(request.getData());
 						break;
 					}
+					case "10c_1": {
+						talkCode_NonGroupMemberList(request.getData());
+						break;
+					}
+					case "10c": {
+						talkCode_AddGroupMember(request.getData());
+						break;
+					}
+					case "10d": {
+						if (talkCode_GetMemberAdminStatus(request.getData()))
+							talkCode_RemoveGroupMember(request.getData());
+						break;
+					}
 					case "10e": {
 						talkCode_GroupMemberList(request.getData());
 						break;
@@ -478,6 +491,50 @@ public class ClientHandler implements Runnable {
 	void talkCode_RenameChat(Map<String, Object> data) throws IOException {
 		try {
 			db.renameChat(data.get("conversationId").toString(), data.get("conversationName").toString());
+			handlerOut.writeObject(new SocketResponse(SocketResponse.RESPONSE_CODE_SUCCESS, null));
+		} catch (SQLException e) {
+			System.out.println(e.getMessage());
+			handlerOut.writeObject(new SocketResponse(SocketResponse.RESPONSE_CODE_FAILURE, null));
+		}
+	}
+
+	void talkCode_NonGroupMemberList(Map<String, Object> data) throws IOException {
+		try {
+			ResultSet queryResult = db.getNonGroupMember(data.get("searchUsername").toString(), data.get("conversationId").toString());
+			ResultSetMetaData queryResultMeta;
+			queryResultMeta = queryResult.getMetaData();
+
+			Vector<Map<String, Object>> responseData = new Vector<>();
+			while (queryResult.next()) {
+				Map<String, Object> row = new HashMap<>();
+				for (int i = 1; i <= queryResultMeta.getColumnCount(); i++) {
+					row.put(queryResultMeta.getColumnLabel(i), queryResult.getObject(i));
+				}
+
+				responseData.add(row);
+			}
+
+			queryResult.getStatement().close();
+			handlerOut.writeObject(new SocketResponse(SocketResponse.RESPONSE_CODE_SUCCESS, responseData));
+		} catch (SQLException | NullPointerException e) {
+			System.out.println(e.getMessage());
+			handlerOut.writeObject(new SocketResponse(SocketResponse.RESPONSE_CODE_FAILURE, null));
+		}
+	}
+
+	void talkCode_AddGroupMember(Map<String, Object> data) throws IOException {
+		try {
+			db.addGroupMember(data.get("conversationId").toString(), data.get("newMemberId").toString());
+			handlerOut.writeObject(new SocketResponse(SocketResponse.RESPONSE_CODE_SUCCESS, null));
+		} catch (SQLException e) {
+			System.out.println(e.getMessage());
+			handlerOut.writeObject(new SocketResponse(SocketResponse.RESPONSE_CODE_FAILURE, null));
+		}
+	}
+
+	void talkCode_RemoveGroupMember(Map<String, Object> data) throws IOException {
+		try {
+			db.removeGroupMember(data.get("conversationId").toString(), data.get("newMemberId").toString());
 			handlerOut.writeObject(new SocketResponse(SocketResponse.RESPONSE_CODE_SUCCESS, null));
 		} catch (SQLException e) {
 			System.out.println(e.getMessage());

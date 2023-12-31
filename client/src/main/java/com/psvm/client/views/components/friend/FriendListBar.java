@@ -226,6 +226,7 @@ public class FriendListBar extends JPanel{
             @Override
             public void workerDidUpdate(Vector<Map<String, Object>> result) {
                 SwingUtilities.invokeLater(() -> {
+                    System.out.println(result);
                     try {
                         switch (searchOption) {
                             case "friend": {
