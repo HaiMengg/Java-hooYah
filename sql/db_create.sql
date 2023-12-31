@@ -9,7 +9,7 @@ create table hooyah.User (
     DoB timestamp,
     Gender bool,
     Email varchar(255),
-    Status tinyint(1) default 0,
+    Status tinyint default 0,
     StatusDetail nvarchar(255),
     CreationDate timestamp
 );
@@ -26,6 +26,7 @@ create table hooyah.UserLog (
 create table hooyah.Conversation (
 	ConversationId varchar(255) primary key,
 	ConversationName nvarchar(255),
+    IsGroup bool,
     IsE2EE bool default false
 );
 
@@ -44,18 +45,21 @@ create table hooyah.ConversationMessage (
 	SenderId varchar(255),
     Datetime timestamp,
     Content nvarchar(255),
-    Encryption varchar(255) default null,
+    Encryption varchar(255) default '',
     primary key (MessageId, ConversationId),
     foreign key (ConversationId, SenderId) references ConversationMember(ConversationId, MemberId) 
 );
+-- update hooyah.conversationmessage set Encryption='';
+-- ALTER TABLE hooyah.conversationmessage MODIFY COLUMN Encryption VARCHAR(255) DEFAULT '';
 
 create table hooyah.E2EE (
 	ConversationId varchar(255),
     MemberId varchar(255),
-    PublicKey varchar(255) default null,
+    PublicKey varchar(255) default '',
     primary key (ConversationId, MemberId),
     foreign key (ConversationId, MemberId) references ConversationMember(ConversationId, MemberId)
 );
+-- ALTER TABLE hooyah.E2EE MODIFY COLUMN PublicKey VARCHAR(255) DEFAULT '';
 
 create table hooyah.ConversationLog (
 	ConversationId varchar(255),
@@ -78,7 +82,7 @@ create table hooyah.MessageSeen (
 create table hooyah.Friend (
 	UserId varchar(255),
     FriendId varchar(255),
-    Status tinyint(1) default 0,
+    Status tinyint default 0,
     primary key (UserId, FriendId)
 );
 
@@ -101,13 +105,28 @@ create table hooyah.SpamReport (
     foreign key (ReportedId) references User(Username)
 );
 
+create table hooyah.Emptiness (
+	placeholder int
+);
+
 DELIMITER //
-create trigger TRG_Request_Response
+create trigger hooyah.TRG_Request_Response
 after update on FriendRequest
 for each row
 begin
+	declare highestId int;
+	select MAX(CAST(SUBSTRING(ConversationId, 3) AS UNSIGNED)) into highestId from conversation;
+    
 	if old.Status=0 and new.Status=1 then
-		insert into Friend (UserId, FriendId) values (old.SenderId, old.TargetId);
+		insert into hooyah.Friend (UserId, FriendId) values (old.SenderId, old.TargetId);
+        
+        insert into hooyah.Conversation (ConversationId, ConversationName, IsGroup)
+        values (CONCAT('CV', LPAD(highestId + 1, 6, '0')), 'Cuộc trò chuyện', false);
+        
+        insert into hooyah.ConversationMember
+        values
+			(CONCAT('CV', LPAD(highestId + 1, 6, '0')), old.SenderId, true),
+			(CONCAT('CV', LPAD(highestId + 1, 6, '0')), old.TargetId, true);
 	end if;
 end;
 //
@@ -116,15 +135,16 @@ DELIMITER ;
 
 insert into hooyah.User
 values 
-	('Highman', 'Nguyễn', 'Anh Khoa', '123456', '1234 gadgdf', '2003-01-01', true, 'dagdg@email', 0, '', '2023-02-12'),
-	('Kizark', 'Nguyễn', 'Lâm Hải', 'abcdef', '35 fdsgfd', '2003-02-02', true, 'fasd@email', 0, '', '2023-02-12'),
-	('Baobeo', 'Nguyễn Phú', 'Minh Bảo', 'abc123', '5435 ashhh', '2003-03-03', true, 'hhh@email', 0, '', '2023-02-12'),
-	('adhd', 'agdsg', 'gadsghf', '123', '222 ttt', '1970-04-04', false, 'ytrhy@email', 0, '', '2023-02-12');
+	('Highman', 'Nguyễn', 'Anh Khoa', '25d55ad283aa400af464c76d713c07ad', '1234 gadgdf', '2003-01-01', true, 'dagdg@email', 0, '', '2023-02-12'),
+	('Kizark', 'Nguyễn', 'Lâm Hải', '25d55ad283aa400af464c76d713c07ad', '35 fdsgfd', '2003-02-02', true, 'fasd@email', 0, '', '2023-02-12'),
+	('Baobeo', 'Nguyễn Phú', 'Minh Bảo', '25d55ad283aa400af464c76d713c07ad', '5435 ashhh', '2003-03-03', true, 'hhh@email', 0, '', '2023-02-12'),
+	('adhd', 'agdsg', 'gadsghf', '25d55ad283aa400af464c76d713c07ad', '222 gfdgsfd', '1970-04-04', false, 'ytrhy@email', 0, '', '2023-02-12'),
+	('HaiMen', 'Hai', 'Mèn', '25d55ad283aa400af464c76d713c07ad', '222 hdhgf', '1970-04-04', true, 'fdasf@gmail', 2, '', '2023-02-12');
 
-insert into hooyah.Conversation (ConversationId, ConversationName)
+insert into hooyah.Conversation (ConversationId, ConversationName, IsGroup)
 values
-	('CV000001', 'Cuộc trò chuyện'),
-	('CV000002', 'Cuộc trò chuyện');
+	('CV000001', 'Cuộc trò chuyện', false),
+	('CV000002', 'Cuộc trò chuyện', true);
 
 insert into hooyah.ConversationMember
 values
@@ -137,6 +157,7 @@ insert into hooyah.ConversationMember values ('CV000002', 'adhd', true);
 
 insert into hooyah.Friend (UserId, FriendId)
 values ('Highman', 'Baobeo');
+insert into hooyah.Friend (UserId, FriendId) values ('Highman', 'adhd');
 
 insert into hooyah.FriendRequest (SenderId, TargetId, Datetime) values ('Kizark', 'Highman', current_timestamp());
 update hooyah.FriendRequest
@@ -197,3 +218,19 @@ values
 	(6, 'CV000002', 'Kizark'),
 	(6, 'CV000002', 'adhd'),
 	(6, 'CV000002', 'Baobeo');
+    
+insert into hooyah.userlog (UserId, Datetime, LogType, LogDetail)
+values 
+	('Kizark', '2022-11-12 06:30:01', 0, 'Login'),
+	('Kizark', '2022-11-12 06:40:01', 1, 'Logout'),
+    ('Baobeo', '2023-11-12 06:30:01', 0, 'Login'),
+	('Baobeo', '2022-11-12 06:45:01', 1, 'Logout'),
+    ('adhd', '2022-11-12 06:28:01', 0, 'Login'),
+    ('adhd', '2022-11-12 06:30:01', 1, 'Logout'),
+    ('Highman', '2023-11-12 06:30:01', 0, 'Login'),
+    ('Highman', '2023-11-12 06:36:01', 1, 'Logout');
+
+insert into hooyah.spamreport (ReporterId, ReportedId, Datetime) 
+values 
+	('adhd', 'Highman', '2022-11-11 06:30:01'),
+	('Kizark', 'Baobeo', '2022-11-12 06:30:01');

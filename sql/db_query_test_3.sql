@@ -13,7 +13,7 @@ WITH ranked_data AS (
 )
 SELECT DISTINCT rd.ConversationId, rd.ConversationName, rd.MessageId, rd.MemberId, SenderId, rd.Datetime, Content, IsGroup
 FROM ranked_data rd
-WHERE rn = 1 AND IsGroup=true AND NOT EXISTS (
+WHERE rn = 1 AND IsGroup=false AND NOT EXISTS (
 	SELECT *
     FROM MessageSeen ms
     WHERE ms.MessageId = rd.MessageId AND ms.ConversationId = rd.ConversationId AND ms.SeenId = 'Highman'
@@ -21,6 +21,10 @@ WHERE rn = 1 AND IsGroup=true AND NOT EXISTS (
 	SELECT ul.Datetime
     FROM UserLog ul
     WHERE ul.UserId = 'Highman' AND ul.LogType = 0
+) AND EXISTS (
+	SELECT *
+    FROM Friend f
+    WHERE (f.UserId = rd.SenderId AND f.FriendId = rd.MemberId AND f.Status = 1) OR (f.UserId = rd.MemberId AND f.FriendId = rd.SenderId AND f.Status = 2)
 );
 
 -- Unseen offline messages
@@ -46,6 +50,10 @@ WHERE rn = 1 AND IsGroup=false AND NOT EXISTS (
 	SELECT ul.Datetime
     FROM UserLog ul
     WHERE ul.UserId = 'Highman' AND ul.LogType = 0
+) AND EXISTS (
+	SELECT *
+    FROM Friend f
+    WHERE (f.UserId = rd.SenderId AND f.FriendId = rd.MemberId AND f.Status = 1) OR (f.UserId = rd.MemberId AND f.FriendId = rd.SenderId AND f.Status = 2)
 );
 
 -- Seen messages
@@ -63,10 +71,14 @@ WITH ranked_data AS (
 )
 SELECT DISTINCT rd.ConversationId, rd.ConversationName, rd.MessageId, rd.MemberId, SenderId, rd.Datetime, Content, IsGroup
 FROM ranked_data rd
-WHERE rn = 1 AND IsGroup=true AND EXISTS (
+WHERE rn = 1 AND IsGroup=false AND EXISTS (
 	SELECT *
     FROM MessageSeen ms
     WHERE ms.MessageId = rd.MessageId AND ms.ConversationId = rd.ConversationId AND ms.SeenId = 'Highman'
+) AND EXISTS (
+	SELECT *
+    FROM Friend f
+    WHERE (f.UserId = rd.SenderId AND f.FriendId = rd.MemberId AND f.Status = 1) OR (f.UserId = rd.MemberId AND f.FriendId = rd.SenderId AND f.Status = 2)
 );
 
 -- Other friends with no message
@@ -75,15 +87,9 @@ FROM Conversation cv
 JOIN ConversationMember cvmem ON cv.ConversationId = cvmem.ConversationId
 JOIN ConversationMember cvmem2 ON cv.ConversationId = cvmem2.ConversationId
 LEFT JOIN ConversationMessage cvmes ON cv.ConversationId = cvmes.ConversationId 
-WHERE cv.IsGroup=false AND cvmem.MemberId = 'adhd' AND cvmem2.MemberId != 'adhd' AND cvmem2.MemberId LIKE '%%'
+WHERE cv.IsGroup=false AND cvmem.MemberId = 'Highman' AND cvmem2.MemberId != 'Highman' AND cvmem2.MemberId LIKE '%%' AND EXISTS (
+	SELECT *
+    FROM Friend f
+    WHERE (f.UserId = cvmem.MemberId AND f.FriendId = cvmem2.MemberId AND f.Status = 1) OR (f.UserId = cvmem2.MemberId AND f.FriendId = cvmem.MemberId AND f.Status = 2))
 GROUP BY cv.ConversationId, cvmem2.MemberId
 HAVING COUNT(cvmes.MessageId) = 0;
-
--- Get messages not seen by self
-SELECT cvmes.MessageId
-FROM ConversationMessage cvmes
-WHERE cvmes.ConversationId='CV000001' AND NOT EXISTS (
-	SELECT *
-    FROM MessageSeen ms
-    WHERE ms.ConversationId = cvmes.ConversationId AND cvmes.MessageId = ms.MessageId AND ms.SeenId='Baobeo'
-);
