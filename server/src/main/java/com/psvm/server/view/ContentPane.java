@@ -68,5 +68,18 @@ public class ContentPane extends JPanel {
         this.revalidate();
         this.repaint();
     }
+    void renderDSLienLacNguoiDung(){
+        removeComponent();
+        String[] columnNames = {"STT","Tên", "Số lượng bạn bè","Số lượng bạn của bạn"};
+        this.setLayout(new BorderLayout());
+        DSLienLacNguoiDungTable table = new DSLienLacNguoiDungTable(columnNames);
+        OptionPanelDSLienLacNguoiDung optionPanel = new OptionPanelDSLienLacNguoiDung(table);
+        this.add(optionPanel,BorderLayout.NORTH);
+        JScrollPane scrollPane = new JScrollPane();
+        scrollPane.setViewportView(table);
+        this.add(scrollPane,BorderLayout.CENTER);
+        this.revalidate();
+        this.repaint();
+    }
 }
 
