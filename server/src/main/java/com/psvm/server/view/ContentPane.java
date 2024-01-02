@@ -94,5 +94,30 @@ public class ContentPane extends JPanel {
         this.revalidate();
         this.repaint();
     }
+    void renderDSNguoiDungHoatDong(){
+        removeComponent();
+        String[] columnNames = {"STT","Tên", "Thời gian hoạt lần cuối","Số lần mở ứng dụng","Số lần chat với người","Số lần chat với nhóm"};
+        this.setLayout(new BorderLayout());
+        DSNguoiDungHoatDongTable table = new DSNguoiDungHoatDongTable(columnNames);
+        OptionPanelDSNguoiDungHoatDong optionPanel = new OptionPanelDSNguoiDungHoatDong(table);
+        this.add(optionPanel,BorderLayout.NORTH);
+        JScrollPane scrollPane = new JScrollPane();
+        scrollPane.setViewportView(table);
+        this.add(scrollPane,BorderLayout.CENTER);
+        this.revalidate();
+        this.repaint();
+    }
+    void renderBieuDoSoLuongDangKy(){
+        removeComponent();
+
+        this.revalidate();
+        this.repaint();
+    }
+    void renderBieuDoHoatDong(){
+        removeComponent();
+
+        this.revalidate();
+        this.repaint();
+    }
 }
 
