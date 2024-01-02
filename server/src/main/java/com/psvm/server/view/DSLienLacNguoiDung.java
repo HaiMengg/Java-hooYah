@@ -119,7 +119,6 @@ class DSLienLacNguoiDungTable extends JTable{
         //add columnCount for later use
         this.columnCount = this.getColumnCount();
 
-        DateTimeFormatter myFormatObj = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     }
 

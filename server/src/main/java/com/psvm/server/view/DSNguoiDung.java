@@ -128,7 +128,7 @@ class DSNguoiDungTable extends JTable{
         this.getColumnModel().getColumn(columnNames.length - 1).setCellRenderer(new ButtonRenderer());
         this.getColumnModel().getColumn(columnNames.length - 1).setCellEditor(new ButtonEditor(new JCheckBox()));
         //Renderer for "time" column
-        DateTimeFormatter myFormatObj = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        DateTimeFormatter myFormatObj = DateTimeFormatter.ofPattern("dd-MM-yyyy");
         DefaultTableCellRenderer dateTimeRenderer = new DefaultTableCellRenderer() {
             @Serial
             private static final long serialVersionUID = 1L;
@@ -256,13 +256,13 @@ class DSNguoiDungTable extends JTable{
         addDialog.add(fullNameField);
         addDialog.add(new JLabel("Địa chỉ:"));
         addDialog.add(addressField);
-        addDialog.add(new JLabel("Ngày sinh (DD/MM/YYYY):"));
+        addDialog.add(new JLabel("Ngày sinh (DD-MM-YYYY):"));
         addDialog.add(dobField);
         addDialog.add(new JLabel("Giới tính:"));
         addDialog.add(genderField);
         addDialog.add(new JLabel("Email:"));
         addDialog.add(emailField);
-        addDialog.add(new JLabel("Ngày tạo TK (DD/MM/YYYY):"));
+        addDialog.add(new JLabel("Ngày tạo TK (DD-MM-YYYY):"));
         addDialog.add(creationDateField);
         //Trạng thái thì không tạo vì mới tạo làm gì đã online.
 //        String[] statuses = {"","Online","Offline","Banned"};
