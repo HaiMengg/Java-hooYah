@@ -111,6 +111,7 @@ class SideMenu extends JPanel{
                         contentPane.renderDSNguoiDungDangNhap();
                         break;
                     case "Danh sách người dùng đăng ký":
+                        contentPane.renderDSNguoiDungDangKyMoi();
                         break;
                     case "Biểu đồ người dùng đăng ký":
                         break;

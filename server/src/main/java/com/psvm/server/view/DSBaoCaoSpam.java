@@ -11,6 +11,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.Serial;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.ParseException;
@@ -36,22 +37,21 @@ class OptionPanelDSSpam extends JPanel {
         filterPanel.setOpaque(false);
         filterPanel.setBorder(new EmptyBorder(0, 0, 0, 100));
         //Filter fiele
-        JFormattedTextField timeField = null;
-        JFormattedTextField dateField = null;
-        try {
-            //Time text field
-            MaskFormatter mask = new MaskFormatter("##:##");
-            timeField = new JFormattedTextField(mask);
-            timeField.setColumns(4); //size
-            timeField.setHorizontalAlignment(JTextField.CENTER);
-            //Date text field
-            MaskFormatter dateFormatter = new MaskFormatter("##/##/####");
-            dateField = new JFormattedTextField(dateFormatter);
-            dateField.setColumns(10); //size
-            dateField.setHorizontalAlignment(JTextField.CENTER);
-        } catch (ParseException e) {
-            e.printStackTrace();
+        String[] dateField = new String[32];
+        dateField[0] = "";
+        for (int i = 1; i <= 31; i++){
+            dateField[i] = String.valueOf(i);
         }
+        String[] monthField = {"","1","2","3","4","5","6","7","8","9","10","11","12"};
+
+        JComboBox<String> dayChoice = new JComboBox<>(dateField);
+        JComboBox<String> monthChoice = new JComboBox<>(monthField);
+        JTextField yearChoice = new JTextField(10);
+
+        //name field
+        JTextField nameField = new JTextField();
+        nameField.setColumns(20);
+
         //Filter button
         JButton filterButton = new JButton("       Lọc       ");
         filterButton.setFocusPainted(false);
@@ -59,16 +59,23 @@ class OptionPanelDSSpam extends JPanel {
         filterButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-//                System.out.println(nameFilter);
-//                System.out.println(usernameFilter);
-//              table.filterTable(usernameFilter,nameFilter,statusFilter);
+                String day = (String) dayChoice.getSelectedItem();
+                String month = (String) monthChoice.getSelectedItem();
+                String year = yearChoice.getText();
+                String name = nameField.getText();
+
+                table.filterTable(name,day,month,year);
             }
         });
         //Add to filter Panel
-        filterPanel.add(new JLabel("Giờ: "));
-        filterPanel.add(timeField);
-        filterPanel.add(new JLabel("Ngày (DD/MM/YYYY): "));
-        filterPanel.add(dateField);
+        filterPanel.add(new JLabel("Ngày: "));
+        filterPanel.add(dayChoice);
+        filterPanel.add(new JLabel("Tháng: "));
+        filterPanel.add(monthChoice);
+        filterPanel.add(new JLabel("Năm: "));
+        filterPanel.add(yearChoice);
+        filterPanel.add(new JLabel("Tên: "));
+        filterPanel.add(nameField);
         filterPanel.add(filterButton);
 
         //Utilities Panel
@@ -139,6 +146,21 @@ class DSBaoCaoSpamTable extends JTable{
         setColumnWidthToFitContent();
         //add columnCount for later use
         this.columnCount = this.getColumnCount();
+
+        DateTimeFormatter myFormatObj = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        DefaultTableCellRenderer dateTimeRenderer = new DefaultTableCellRenderer() {
+            @Serial
+            private static final long serialVersionUID = 1L;
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                if (value instanceof LocalDate) {
+                    value = ((LocalDate) value).format(myFormatObj);
+                }
+                setHorizontalAlignment(SwingConstants.CENTER);
+                return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            }
+        };
+        getColumnModel().getColumn(3).setCellRenderer(dateTimeRenderer);
     }
 
     protected void startNextWorker() {
@@ -192,22 +214,35 @@ class DSBaoCaoSpamTable extends JTable{
             model.removeRow(0);
         }
     }
-    void filterTable(String name){
+    void filterTable(String name, String day, String month, String year) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(model);
                 List<RowFilter<Object, Object>> filters = new ArrayList<>();
-                if (!name.isEmpty()) filters.add(RowFilter.regexFilter(name,1));
-                if (!filters.isEmpty()){
-                    RowFilter<Object,Object> combinedFilter = RowFilter.andFilter(filters);
-                    sorter.setRowFilter(combinedFilter);
+
+                if (!name.isEmpty()) {
+                    filters.add(RowFilter.regexFilter(name, 1));
                 }
-                else sorter.setRowFilter(null);
+
+                if (!day.isEmpty() && !month.isEmpty() && !year.isEmpty()) {
+                    LocalDate filterDate = LocalDate.of(Integer.parseInt(year), Integer.parseInt(month), Integer.parseInt(day));
+
+                    filters.add(new RowFilter<Object, Object>() {
+                        @Override
+                        public boolean include(Entry<? extends Object, ? extends Object> entry) {
+                            LocalDate date = (LocalDate) entry.getValue(3); // Assuming index 3 is the LocalDate column
+                            return date.equals(filterDate);
+                        }
+                    });
+                }
+
+                sorter.setRowFilter(RowFilter.andFilter(filters));
                 setRowSorter(sorter);
             }
         });
     }
+
     void refreshTable() {
         SwingUtilities.invokeLater(new Runnable() {
             @Override

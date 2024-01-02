@@ -1,33 +1,21 @@
 package com.psvm.server.view;
 
-import com.psvm.server.controllers.DBWrapper;
-
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.Serial;
-import java.sql.ResultSet;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 
-class OptionPanelDSLienLacNguoiDung extends JPanel{
-    DSLienLacNguoiDungTable table;
-    OptionPanelDSLienLacNguoiDung(DSLienLacNguoiDungTable table){
+class OptionPanelDSNguoiDungDangKyMoi extends JPanel{
+    DSNguoiDungDangKyMoiTable table;
+    OptionPanelDSNguoiDungDangKyMoi(DSNguoiDungDangKyMoiTable table){
         this.table = table;
         this.setLayout(new BorderLayout());
         this.setOpaque(false);
@@ -42,16 +30,24 @@ class OptionPanelDSLienLacNguoiDung extends JPanel{
         filterPanel.setBorder(new EmptyBorder(0,0,0,100));
         //filterPanel.setSize(990,180);
         //Filter field
+        String[] dateField = new String[32];
+        dateField[0] = "";
+        for (int i = 1; i <= 31; i++){
+            dateField[i] = String.valueOf(i);
+        }
+        String[] monthField = {"","1","2","3","4","5","6","7","8","9","10","11","12"};
+
+        JComboBox<String> dayChoice = new JComboBox<>(dateField);
+        JComboBox<String> monthChoice = new JComboBox<>(monthField);
+        JTextField yearChoice = new JTextField(5);
+
+        JComboBox<String> dayChoice2 = new JComboBox<>(dateField);
+        JComboBox<String> monthChoice2 = new JComboBox<>(monthField);
+        JTextField yearChoice2 = new JTextField(5);
+
         //name field
         JTextField nameField = new JTextField();
         nameField.setColumns(20);
-
-
-        //number of friend field
-        String[] items = {"Bằng", "Lớn hơn", "Nhỏ hơn"};
-        JComboBox<String> dropdown = new JComboBox<>(items);
-        JTextField numberOfFriendsField = new JTextField();
-        numberOfFriendsField.setColumns(20);
 
         //Filter button
         JButton filterButton = new JButton("       Lọc       ");
@@ -60,18 +56,32 @@ class OptionPanelDSLienLacNguoiDung extends JPanel{
         filterButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                String dayStart = (String) dayChoice.getSelectedItem();
+                String monthStart = (String) monthChoice.getSelectedItem();
+                String yearStart = yearChoice.getText();
+                String dayEnd = (String) dayChoice2.getSelectedItem();
+                String monthEnd = (String) monthChoice2.getSelectedItem();
+                String yearEnd =  yearChoice2.getText();
                 String nameFilter = nameField.getText();
-                String numberOfFriendFilter = numberOfFriendsField.getText();
-                String choice = (String) dropdown.getSelectedItem();
                 System.out.println(nameFilter);
-                table.filterTable(nameFilter,numberOfFriendFilter, choice);
+                table.filterTable(nameFilter, dayStart, monthStart,yearStart,dayEnd,monthEnd,yearEnd);
             }
         });
         //Add to filter Panel
+        filterPanel.add(new JLabel("Từ Ngày: "));
+        filterPanel.add(dayChoice);
+        filterPanel.add(new JLabel("Tháng: "));
+        filterPanel.add(monthChoice);
+        filterPanel.add(new JLabel("Năm: "));
+        filterPanel.add(yearChoice);
+        filterPanel.add(new JLabel("Đến Ngày: "));
+        filterPanel.add(dayChoice2);
+        filterPanel.add(new JLabel("Tháng: "));
+        filterPanel.add(monthChoice2);
+        filterPanel.add(new JLabel("Năm: "));
+        filterPanel.add(yearChoice2);
         filterPanel.add(new JLabel("Tên: "));
         filterPanel.add(nameField);
-        filterPanel.add(dropdown);
-        filterPanel.add(numberOfFriendsField);
         filterPanel.add(filterButton);
 
         //Add to Option Panel
@@ -80,7 +90,7 @@ class OptionPanelDSLienLacNguoiDung extends JPanel{
 
     }
 }
-class DSLienLacNguoiDungTable extends JTable{
+class DSNguoiDungDangKyMoiTable extends JTable{
     //private MySQLData mySQLData; //Biến để lưu database, coi cách gọi database của tao trong Example/Table
     // Cần dòng này để gọi dữ liệu từ database
     // Khi trả dữ về thì trả với dạng List<Object[]> (ArrayList)
@@ -94,7 +104,7 @@ class DSLienLacNguoiDungTable extends JTable{
     DefaultTableModel getTableModel(){
         return model;
     }
-    DSLienLacNguoiDungTable(String[] columnNames){
+    DSNguoiDungDangKyMoiTable(String[] columnNames){
         super(new DefaultTableModel(columnNames,0));
         //Formating the table
         this.model = (DefaultTableModel) this.getModel();
@@ -110,17 +120,29 @@ class DSLienLacNguoiDungTable extends JTable{
         // CHỖ NÀY ĐỌC KĨ VÀO CHO TAO
         // TẤT cả ngày ở mySQL phải là SQL date, khi gọi hàm ở database, nhớ chuyển nó về LocalDate để add vào data
         //startNextWorker(); // riel data
-        model.addRow(new Object[]{0,"hải",2,5});
-        model.addRow(new Object[]{1,"khoa",3,4});
-        model.addRow(new Object[]{2,"bảo1",4,6});
-        model.addRow(new Object[]{3,"bảo2",2,3});
+        model.addRow(new Object[]{0,"hải", LocalDate.of(2023,5,30)});
+        model.addRow(new Object[]{1,"khoa",LocalDate.of(2023,6,2)});
+        model.addRow(new Object[]{2,"bảo1",LocalDate.of(2022,11,4)});
+        model.addRow(new Object[]{3,"bảo2",LocalDate.of(2022,5,4)});
         //formatting table
         setColumnWidthToFitContent();
         //add columnCount for later use
         this.columnCount = this.getColumnCount();
 
-        DateTimeFormatter myFormatObj = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-
+        DateTimeFormatter myFormatObj = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        DefaultTableCellRenderer dateTimeRenderer = new DefaultTableCellRenderer() {
+            @Serial
+            private static final long serialVersionUID = 1L;
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                if (value instanceof LocalDate) {
+                    value = ((LocalDate) value).format(myFormatObj);
+                }
+                setHorizontalAlignment(SwingConstants.CENTER);
+                return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            }
+        };
+        getColumnModel().getColumn(2).setCellRenderer(dateTimeRenderer);
     }
 
 //    protected void startNextWorker() {
@@ -175,7 +197,7 @@ class DSLienLacNguoiDungTable extends JTable{
 //        });
 //        service.schedule(userWorker, 1000, TimeUnit.MILLISECONDS);
 //    }
-void filterTable(String name, String numberOfFriend, String choice) {
+void filterTable(String name, String dayStart, String monthStart, String yearStart, String dayEnd, String monthEnd, String yearEnd) {
     SwingUtilities.invokeLater(new Runnable() {
         @Override
         public void run() {
@@ -186,40 +208,27 @@ void filterTable(String name, String numberOfFriend, String choice) {
                 filters.add(RowFilter.regexFilter(name, 1));
             }
 
-            if (!numberOfFriend.isEmpty()) {
-                try {
-                    int friendValue = Integer.parseInt(numberOfFriend);
-                    int columnIndexOfFriend = 2;
+            if (!monthStart.isEmpty() && !yearStart.isEmpty() && !monthEnd.isEmpty() && !yearEnd.isEmpty()) {
+                LocalDate startDate = LocalDate.of(Integer.parseInt(yearStart), Integer.parseInt(monthStart), Integer.parseInt(dayStart));
+                LocalDate endDate = LocalDate.of(Integer.parseInt(yearEnd), Integer.parseInt(monthEnd), Integer.parseInt(dayEnd));
 
-                    switch (choice) {
-                        case "Bằng":
-                            filters.add(RowFilter.numberFilter(RowFilter.ComparisonType.EQUAL, friendValue, columnIndexOfFriend));
-                            break;
-                        case "Lớn hơn":
-                            filters.add(RowFilter.numberFilter(RowFilter.ComparisonType.AFTER, friendValue, columnIndexOfFriend));
-                            break;
-                        case "Nhỏ hơn":
-                            filters.add(RowFilter.numberFilter(RowFilter.ComparisonType.BEFORE, friendValue, columnIndexOfFriend));
-                            break;
-                        default:
-                            break;
+                filters.add(new RowFilter<Object, Object>() {
+                    @Override
+                    public boolean include(Entry<? extends Object, ? extends Object> entry) {
+                        LocalDate date = (LocalDate) entry.getValue(2);
+
+                        return !date.isBefore(startDate) && !date.isAfter(endDate);
                     }
-                } catch (NumberFormatException e) {
-                  e.printStackTrace();
-                }
+                });
             }
 
-            if (!filters.isEmpty()) {
-                RowFilter<Object, Object> combinedFilter = RowFilter.andFilter(filters);
-                sorter.setRowFilter(combinedFilter);
-            } else {
-                sorter.setRowFilter(null);
-            }
-
+            sorter.setRowFilter(RowFilter.andFilter(filters));
             setRowSorter(sorter);
         }
     });
 }
+
+
 
 
 
