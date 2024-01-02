@@ -81,5 +81,18 @@ public class ContentPane extends JPanel {
         this.revalidate();
         this.repaint();
     }
+    void renderDSNguoiDungDangKyMoi(){
+        removeComponent();
+        String[] columnNames = {"STT","Tên", "Thời gian"};
+        this.setLayout(new BorderLayout());
+        DSNguoiDungDangKyMoiTable table = new DSNguoiDungDangKyMoiTable(columnNames);
+        OptionPanelDSNguoiDungDangKyMoi optionPanel = new OptionPanelDSNguoiDungDangKyMoi(table);
+        this.add(optionPanel,BorderLayout.NORTH);
+        JScrollPane scrollPane = new JScrollPane();
+        scrollPane.setViewportView(table);
+        this.add(scrollPane,BorderLayout.CENTER);
+        this.revalidate();
+        this.repaint();
+    }
 }
 
