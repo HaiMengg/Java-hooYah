@@ -102,6 +102,7 @@ class SideMenu extends JPanel{
                         contentPane.renderDSNhomChat();
                         break;
                     case "Danh sách liên lạc của người dùng":
+                        contentPane.renderDSLienLacNguoiDung();
                         break;
                     case "Danh sách báo cáo spam":
                         contentPane.renderDSBaoCaoSpam();
@@ -110,12 +111,16 @@ class SideMenu extends JPanel{
                         contentPane.renderDSNguoiDungDangNhap();
                         break;
                     case "Danh sách người dùng đăng ký":
+                        contentPane.renderDSNguoiDungDangKyMoi();
                         break;
                     case "Biểu đồ người dùng đăng ký":
+                        contentPane.renderBieuDoSoLuongDangKy();
                         break;
                     case "Danh sách hoạt động của người dùng":
+                        contentPane.renderDSNguoiDungHoatDong();
                         break;
                     case "Biểu đồ hoạt động của người dùng":
+                        contentPane.renderBieuDoHoatDong();
                         break;
                     default:
                         contentPane.renderDSNguoiDung();
