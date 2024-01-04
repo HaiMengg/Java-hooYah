@@ -81,7 +81,7 @@ public class ClientHandler implements Runnable {
 					case "4c": {
 						Map<String, Object> data = request.getData();
 						try {
-							db.respondFriendRequest((Integer) data.get("response"), data.get("username").toString(), data.get("senderId").toString());
+							db.respondFriendRequest((Integer) data.get("responseType"), data.get("username").toString(), data.get("senderId").toString());
 							handlerOut.writeObject(new SocketResponse(SocketResponse.RESPONSE_CODE_SUCCESS, null));
 						} catch (SQLException e) {
 							System.out.println(e.getMessage());
