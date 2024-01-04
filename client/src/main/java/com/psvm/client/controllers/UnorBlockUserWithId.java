@@ -8,9 +8,9 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.Map;
 
-public class BlockUserWithId extends SocketTalk {
-    public BlockUserWithId(Socket socket, ObjectInputStream socketIn, ObjectOutputStream socketOut, String userId) {
-        super(socket, socketIn, socketOut, SocketTalk.BLOCK_CODE_BLOCK_USER, Map.of(
+public class UnorBlockUserWithId extends SocketTalk {
+    public UnorBlockUserWithId(Socket socket, ObjectInputStream socketIn, ObjectOutputStream socketOut, String userId) {
+        super(socket, socketIn, socketOut, SocketTalk.BLOCK_CODE_UN_OR_BLOCK_USER, Map.of(
                 "blocker", LocalData.getCurrentUsername(),
                 "blocked", userId
         ));
