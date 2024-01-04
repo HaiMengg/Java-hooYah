@@ -627,7 +627,7 @@ public class ClientHandler implements Runnable {
 	void blockCode_UnorBlockUser(Map<String, Object> data) throws IOException {
 		try {
 			ResultSet isBlockedQuery = db.determineIsBlocked(data.get("blocker").toString(), data.get("blocked").toString());
-			while (isBlockedQuery.next()){
+			if (isBlockedQuery.next()){
 				boolean isBlocked = (int) isBlockedQuery.getObject(1) != 0;
 				if (!isBlocked) {
 					db.UserBlockUser(data.get("blocker").toString(), data.get("blocked").toString());
