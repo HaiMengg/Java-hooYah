@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Vector;
 
 public class DBWrapper {
@@ -829,6 +830,36 @@ public class DBWrapper {
 		questionMarks.add(conversationId);
 		questionMarks.add(username);
 		dbConn.doPreparedStatement(sql, questionMarks);
+	}
+
+	public Vector<Map<String, Object>> getFriendshipStatus(String currentUsername, String conversationId) throws SQLException {
+		String sql = "SELECT f.UserId, f.FriendId, f.Status\n" +
+				"FROM Conversation cv\n" +
+				"JOIN ConversationMember cvmem ON cv.ConversationId = cvmem.ConversationId\n" +
+				"JOIN Friend f ON cvmem.MemberId != ? AND ((f.UserId = ? AND f.FriendId = cvmem.MemberId) OR (f.UserId = cvmem.MemberId AND f.FriendId = ?))\n" +
+				"WHERE cv.IsGroup = false AND cv.ConversationId=?";
+
+		Vector<Object> questionMarks = new Vector<>();
+		questionMarks.add(currentUsername);
+		questionMarks.add(currentUsername);
+		questionMarks.add(currentUsername);
+		questionMarks.add(conversationId);
+
+		ResultSet resultSet = dbConn.doPreparedQuery(sql, questionMarks);
+		if (resultSet.next()) {
+			Vector<Map<String, Object>> data = new Vector<>();
+			String userId = resultSet.getString("UserId");
+			String friendId = resultSet.getString("FriendId");
+			int status = resultSet.getInt("Status");
+			data.add(Map.of(
+					"userId", userId,
+					"friendId", friendId,
+					"status", status
+			));
+
+			return data;
+		}
+		return null;
 	}
 
 	public void sendMessage(String currentUsername, String conversationId, String content) throws SQLException {
