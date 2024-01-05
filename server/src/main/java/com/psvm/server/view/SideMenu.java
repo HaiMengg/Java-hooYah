@@ -5,6 +5,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.SQLException;
 
 class SideMenu extends JPanel{
     private final ContentPane contentPane;
@@ -114,7 +115,11 @@ class SideMenu extends JPanel{
                         contentPane.renderDSNguoiDungDangKyMoi();
                         break;
                     case "Biểu đồ người dùng đăng ký":
-                        contentPane.renderBieuDoSoLuongDangKy();
+                        try {
+                            contentPane.renderBieuDoSoLuongDangKy();
+                        } catch (SQLException ex) {
+                            throw new RuntimeException(ex);
+                        }
                         break;
                     case "Danh sách hoạt động của người dùng":
                         contentPane.renderDSNguoiDungHoatDong();
