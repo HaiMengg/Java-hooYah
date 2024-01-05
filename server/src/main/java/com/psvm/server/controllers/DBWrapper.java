@@ -1012,6 +1012,30 @@ public class DBWrapper {
 		return dbConn.doPreparedQuery(sql, questionMarks);
 	}
 
+	public ResultSet getOnlineDateFromUserLog(String year, String month) throws SQLException {
+		if (year.isEmpty()) {
+			String sql = "Select  Datetime From Userlog  Left Join user On Userlog.UserId = user.Username Order By Datetime Asc ";
+			Vector<Object> questionMarks = new Vector<>();
+
+			return dbConn.doPreparedQuery(sql, questionMarks);
+		} else {
+			if (month.isEmpty()) {
+				String sql = "Select Datetime From Userlog Left Join user On Userlog.UserId = user.Username Where year(Datetime) = ? Order By Datetime Asc ";
+				Vector<Object> questionMarks = new Vector<>();
+				questionMarks.add(year);
+				return dbConn.doPreparedQuery(sql, questionMarks);
+			} else {
+				String sql = "Select Datetime From Userlog Left Join user On Userlog.UserId = user.Username Where year(Datetime) = ? and month(Datetime) = ? Order By Datetime Asc ";
+				Vector<Object> questionMarks = new Vector<>();
+				questionMarks.add(year);
+				questionMarks.add(month);
+
+				return dbConn.doPreparedQuery(sql, questionMarks);
+			}
+		}
+
+	}
+
 	public ResultSet getNewRegisterInfo(String userId) throws SQLException {
 		String sql = "Select UserId, concat_ws(' ', FirstName, LastName) as Hoten, Datetime From hooyah.userlog  Left Join hooyah.user On userlog.UserId = user.Username \n" +
 				"Where userlog.UserId = ? and LogType = '0' Order By DateTime ASC Limit 1";

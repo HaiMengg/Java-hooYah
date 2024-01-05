@@ -17,7 +17,7 @@ import java.beans.PropertyChangeListener;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -59,6 +59,18 @@ class OptionPanelBieuDoSoLuongDangKy extends JPanel{
         filterPanel.add(new JLabel("Năm: "));
         filterPanel.add(dropdown);
         filterPanel.add(filterButton);
+
+        // Refresh
+        JButton refreshButton = new JButton("Làm mới bộ lọc");
+        refreshButton.setFocusPainted(false);
+        refreshButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dropdown.setSelectedIndex(0);
+                panel.filter("");
+            }
+        });
+        filterPanel.add(refreshButton);
         //Add to Option Panel
         this.add(filterPanel,BorderLayout.WEST);
     }
@@ -152,8 +164,8 @@ class BieuDoSoLuongDangKyPanel extends JPanel{
                         .merge(arrTime[1], 1, Integer::sum);
             }
         }
+        updateNonExistingMonths(userRegData);
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        System.out.println(userRegData);
 
         userRegData.forEach((year, monthData) -> {
             monthData.forEach((month, count) -> {
@@ -177,6 +189,36 @@ class BieuDoSoLuongDangKyPanel extends JPanel{
         return dataset;
     }
 
+    private static void updateNonExistingMonths(HashMap<String, HashMap<String, Integer>> userRegData) {
+        for (Map.Entry<String, HashMap<String, Integer>> yearEntry : userRegData.entrySet()) {
+            String year = yearEntry.getKey();
+            HashMap<String, Integer> monthData = yearEntry.getValue();
+
+            // Iterate over months (assuming months are represented as two-digit strings)
+            for (int month = 1; month <= 12; month++) {
+                String monthStr = String.format("%02d", month);
+
+                // Update the month with a value of 0 if it doesn't exist
+                monthData.putIfAbsent(monthStr, 0);
+            }
+        }
+        for (Map.Entry<String, HashMap<String, Integer>> yearEntry : userRegData.entrySet()) {
+            HashMap<String, Integer> monthData = yearEntry.getValue();
+
+            // Sort the entry set of the inner HashMap by month
+            List<Map.Entry<String, Integer>> sortedMonths = new ArrayList<>(monthData.entrySet());
+            Collections.sort(sortedMonths, Map.Entry.comparingByKey());
+
+            // Create a new sorted HashMap for the year
+            HashMap<String, Integer> sortedMonthData = new LinkedHashMap<>();
+            for (Map.Entry<String, Integer> entry : sortedMonths) {
+                sortedMonthData.put(entry.getKey(), entry.getValue());
+            }
+
+            // Replace the existing HashMap with the sorted one
+            yearEntry.setValue(sortedMonthData);
+        }
+    }
 
     void filter(String year) {
         SwingUtilities.invokeLater(new Runnable() {
@@ -227,11 +269,42 @@ class RegisterChartThread extends SwingWorker<Void, HashMap<String, HashMap<Stri
             }
         }
 
+        updateNonExistingMonths(userRegData);
         publish(userRegData);
 
         return null;
     }
 
+    private static void updateNonExistingMonths(HashMap<String, HashMap<String, Integer>> userRegData) {
+        for (Map.Entry<String, HashMap<String, Integer>> yearEntry : userRegData.entrySet()) {
+            String year = yearEntry.getKey();
+            HashMap<String, Integer> monthData = yearEntry.getValue();
+
+            // Iterate over months (assuming months are represented as two-digit strings)
+            for (int month = 1; month <= 12; month++) {
+                String monthStr = String.format("%02d", month);
+
+                // Update the month with a value of 0 if it doesn't exist
+                monthData.putIfAbsent(monthStr, 0);
+            }
+        }
+        for (Map.Entry<String, HashMap<String, Integer>> yearEntry : userRegData.entrySet()) {
+            HashMap<String, Integer> monthData = yearEntry.getValue();
+
+            // Sort the entry set of the inner HashMap by month
+            List<Map.Entry<String, Integer>> sortedMonths = new ArrayList<>(monthData.entrySet());
+            Collections.sort(sortedMonths, Map.Entry.comparingByKey());
+
+            // Create a new sorted HashMap for the year
+            HashMap<String, Integer> sortedMonthData = new LinkedHashMap<>();
+            for (Map.Entry<String, Integer> entry : sortedMonths) {
+                sortedMonthData.put(entry.getKey(), entry.getValue());
+            }
+
+            // Replace the existing HashMap with the sorted one
+            yearEntry.setValue(sortedMonthData);
+        }
+    }
     @Override
     protected void process(List<HashMap<String, HashMap<String, Integer>>> chunks) {
         super.process(chunks);
