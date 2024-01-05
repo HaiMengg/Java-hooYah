@@ -58,6 +58,16 @@ class OptionPanelDSNhomChat extends JPanel{
         filterPanel.add(nameField);
         filterPanel.add(filterButton);
 
+        JButton refreshButton = new JButton("Làm mới bộ lọc");
+        refreshButton.setFocusPainted(false);
+        refreshButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                nameField.setText("");
+                table.filterTable("");
+            }
+        });
+        filterPanel.add(refreshButton);
         //Utilities Panel
         JPanel utilities = new JPanel();
         utilities.setOpaque(false);
