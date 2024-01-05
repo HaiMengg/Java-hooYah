@@ -422,15 +422,16 @@ public class DBWrapper {
 		Vector<Object> questionMarks4 = new Vector<>();
 		// If the client is search for chat message's content then no Unmessaged friends will be displayed
 		if (chatSearch.isEmpty()) {
-			sql4 = "SELECT cv.ConversationId, cvmem2.MemberId\n" +
+			sql4 = "SELECT cv.ConversationId, cv.ConversationName, cvmem2.MemberId\n" +
 					"FROM Conversation cv\n" +
 					"JOIN ConversationMember cvmem ON cv.ConversationId = cvmem.ConversationId\n" +
 					"JOIN ConversationMember cvmem2 ON cv.ConversationId = cvmem2.ConversationId\n" +
 					"LEFT JOIN ConversationMessage cvmes ON cv.ConversationId = cvmes.ConversationId \n" +
-					"WHERE cv.IsGroup=false AND cvmem.MemberId = ? AND cvmem2.MemberId != ? AND cvmem2.MemberId LIKE ?\n" +
+					"WHERE cv.IsGroup=? AND cvmem.MemberId = ? AND cvmem2.MemberId != ? AND cvmem2.MemberId LIKE ?\n" +
 					"GROUP BY cv.ConversationId, cvmem2.MemberId\n" +
 					"HAVING COUNT(cvmes.MessageId) = 0;";
 
+			questionMarks4.add(isGroup);
 			questionMarks4.add(currentUsername);
 			questionMarks4.add(currentUsername);
 			questionMarks4.add("%" + friendSearch + "%");
