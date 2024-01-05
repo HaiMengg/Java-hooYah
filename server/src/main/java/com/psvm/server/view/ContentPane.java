@@ -2,6 +2,7 @@ package com.psvm.server.view;
 
 import javax.swing.*;
 import java.awt.*;
+import java.sql.SQLException;
 
 public class ContentPane extends JPanel {
     ContentPane() {
@@ -107,7 +108,7 @@ public class ContentPane extends JPanel {
         this.revalidate();
         this.repaint();
     }
-    void renderBieuDoSoLuongDangKy(){
+    void renderBieuDoSoLuongDangKy() throws SQLException {
         removeComponent();
         BieuDoSoLuongDangKyPanel bieuDoSoLuongDangKyPanel = new BieuDoSoLuongDangKyPanel();
         OptionPanelBieuDoSoLuongDangKy optionPanel = new OptionPanelBieuDoSoLuongDangKy(bieuDoSoLuongDangKyPanel);

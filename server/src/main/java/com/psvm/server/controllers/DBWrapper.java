@@ -862,11 +862,17 @@ public class DBWrapper {
 		dbConn.doBatchPreparedStatement(new String[]{sql2, sql3}, new Vector[]{questionMarks2, questionMarks3});
 	}
 
-	public ResultSet getFieldUserList(String field) throws SQLException {
-		String sql = "SELECT " + field + " FROM User";
-		Vector<Object> questionMarks = new Vector<>();
-
-		return dbConn.doPreparedQuery(sql, questionMarks);
+	public ResultSet getFieldUserList(String field, String year) throws SQLException {
+		if (year.isEmpty()) {
+			String sql = "SELECT " + field + " FROM User";
+			Vector<Object> questionMarks = new Vector<>();
+			return dbConn.doPreparedQuery(sql, questionMarks);
+		} else {
+			String sql = "SELECT " + field + " FROM User where year(CreationDate) = ?";
+			Vector<Object> questionMarks = new Vector<>();
+			questionMarks.add(year);
+			return dbConn.doPreparedQuery(sql, questionMarks);
+		}
 	}
 
 	public ResultSet determineIsBlocked(String blocker, String blockedUser) throws SQLException {
@@ -960,7 +966,7 @@ public class DBWrapper {
 
 
 	public ResultSet getUserLogListWithDetailInfo() throws SQLException {
-		String sql = "Select UserId, concat_ws(' ', FirstName, LastName) as Hoten, Datetime From userlog  Left Join user On userlog.UserId = user.Username";
+		String sql = "Select UserId, concat_ws(' ', FirstName, LastName) as Hoten, Datetime From userlog  Left Join user On userlog.UserId = user.Username Order By Datetime Asc ";
 		Vector<Object> questionMarks = new Vector<>();
 //		questionMarks.add(dateTime);
 
