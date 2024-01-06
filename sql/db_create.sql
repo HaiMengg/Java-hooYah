@@ -159,6 +159,7 @@ insert into hooyah.ConversationMember values ('CV000002', 'adhd', true);
 insert into hooyah.Friend (UserId, FriendId)
 values ('Highman', 'Baobeo');
 
+insert into hooyah.friendrequest values ('Highman', 'Baobeo', '2023-11-01', 1);
 insert into hooyah.FriendRequest (SenderId, TargetId, Datetime) values ('Kizark', 'Highman', current_timestamp());
 update hooyah.FriendRequest
 	set Status=1
@@ -234,17 +235,3 @@ insert into hooyah.spamreport (ReporterId, ReportedId, Datetime)
 values 
 	('adhd', 'Highman', '2022-11-11 06:30:01'),
 	('Kizark', 'Baobeo', '2022-11-12 06:30:01');
-    
-insert into hooyah.conversationlog values 
-	('CV000001', '2023-12-1 00:00:00', 0, 'Baobeo','Created'),
-    ('CV000001', '2023-12-1 01:00:00', 2, 'Highman','Member added'),
-     ('CV000001', '2023-12-1 02:00:00', 4, 'Highman','Made admin'),
-     ('CV000002', '2024-1-1  01:10:00', 0, 'adhd','Created'),
-     ('CV000002', '2024-1-1  01:03:00', 2, 'Baobeo','Member added'),
-     ('CV000002', '2024-1-1  01:00:10', 2, 'Highman','Member added'),
-     ('CV000002', '2024-1-1  02:00:00', 2, 'Kizark','Member added'),
-     ('CV000002', '2024-1-2  02:10:00', 4, 'Highman','Made admin'),
-     ('CV000003', '2024-1-3  03:00:40', 0, 'Highman','Created'),
-     ('CV000003', '2024-1-3  03:00:50', 2, 'Kizark','Member added'),
-     ('CV000003', '2024-1-3  04:01:00', 4, 'Kizark','Made admin');
-     
