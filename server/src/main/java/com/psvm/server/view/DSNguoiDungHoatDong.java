@@ -309,7 +309,7 @@ class DSNguoiDungHoatDongTable extends JTable{
                         startNextWorker(finalStartDateS, finalEndDateS);
                     }
                 });
-                
+
                 if (!logTime.isEmpty()) {
                     try {
                         int logTimeValue = Integer.parseInt(logTime);
