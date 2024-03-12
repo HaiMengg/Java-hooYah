@@ -46,7 +46,7 @@ class OptionPanelDSSpam extends JPanel {
 
         JComboBox<String> dayChoice = new JComboBox<>(dateField);
         JComboBox<String> monthChoice = new JComboBox<>(monthField);
-        JTextField yearChoice = new JTextField(10);
+        JTextField yearChoice = new JTextField(4);
 
         //name field
         JTextField nameField = new JTextField();

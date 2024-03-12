@@ -109,13 +109,19 @@ public class ContentPane extends JPanel {
     }
     void renderBieuDoSoLuongDangKy(){
         removeComponent();
-
+        BieuDoSoLuongDangKyPanel bieuDoSoLuongDangKyPanel = new BieuDoSoLuongDangKyPanel();
+        OptionPanelBieuDoSoLuongDangKy optionPanel = new OptionPanelBieuDoSoLuongDangKy(bieuDoSoLuongDangKyPanel);
+        this.add(optionPanel,BorderLayout.NORTH);
+        this.add(bieuDoSoLuongDangKyPanel,BorderLayout.CENTER);
         this.revalidate();
         this.repaint();
     }
     void renderBieuDoHoatDong(){
         removeComponent();
-
+        BieuDoHoatDongPanel bieuDoHoatDongPanel = new BieuDoHoatDongPanel();
+        OptionPanelBieuDoHoatDong optionPanel = new OptionPanelBieuDoHoatDong(bieuDoHoatDongPanel);
+        this.add(optionPanel,BorderLayout.NORTH);
+        this.add(bieuDoHoatDongPanel,BorderLayout.CENTER);
         this.revalidate();
         this.repaint();
     }
